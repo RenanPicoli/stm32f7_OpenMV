@@ -5,4 +5,3 @@ usbd_desc.c:316:11:USBD_FS_ManufacturerStrDescriptor	16	static
 usbd_desc.c:328:11:USBD_FS_SerialStrDescriptor	16	static
 usbd_desc.c:347:11:USBD_FS_ConfigStrDescriptor	16	static
 usbd_desc.c:366:11:USBD_FS_InterfaceStrDescriptor	16	static
-usbd_desc.c:386:11:USBD_FS_USR_BOSDescriptor	16	static

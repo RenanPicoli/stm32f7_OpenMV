@@ -2,6 +2,8 @@
 #include "uvc.h"
 //#include "jprocess.h"
 
+#define USB_SETUP_REQ USBD_SetupReqTypedef
+
 extern uint8_t *read_pointer;
 extern uint16_t last_jpeg_frame_size;
 extern volatile uint8_t jpeg_encode_done;//1 - encode stopped
@@ -105,8 +107,8 @@ USBD_Class_cb_TypeDef  VIDEO_cb =
 static uint8_t usbd_video_CfgDesc[] =
 {
   /* Configuration 1 */
-  USB_CONFIGUARTION_DESC_SIZE,               // bLength                  9
-  USB_CONFIGURATION_DESCRIPTOR_TYPE,         // bDescriptorType          2
+  USB_CONFIGURATION_DESC_SIZE,               // bLength                  9
+  USB_DESC_TYPE_CONFIGURATION,        		 // bDescriptorType          2
   WBVAL(USB_VIDEO_DESC_SIZ),
   0x02,                                      // bNumInterfaces           2
   0x01,                                      // bConfigurationValue      1 ID of this configuration
@@ -131,7 +133,7 @@ static uint8_t usbd_video_CfgDesc[] =
 
   /* Standard VC Interface Descriptor  = interface 0 */
   USB_INTERFACE_DESC_SIZE,                   // bLength                  9
-  USB_INTERFACE_DESCRIPTOR_TYPE,             // bDescriptorType          4
+  USB_DESC_TYPE_INTERFACE,            		 // bDescriptorType          4
   USB_UVC_VCIF_NUM,                          // bInterfaceNumber         0 index of this interface (VC)
   0x00,                                      // bAlternateSetting        0 index of this setting
   0x00,                                      // bNumEndpoints            0 no endpoints
@@ -264,7 +266,7 @@ static uint8_t usbd_video_CfgDesc[] =
 
   /* Standard VS Isochronous Video data Endpoint Descriptor */
   USB_ENDPOINT_DESC_SIZE,                   // bLength                  7
-  USB_ENDPOINT_DESCRIPTOR_TYPE,             // bDescriptorType          5 (ENDPOINT)
+  USB_DESC_TYPE_ENDPOINT,            		// bDescriptorType          5 (ENDPOINT)
   USB_ENDPOINT_IN(1),                       // bEndpointAddress      0x83 EP 3 IN
   USB_ENDPOINT_TYPE_ISOCHRONOUS,            // bmAttributes             1 isochronous transfer type
   WBVAL(VIDEO_PACKET_SIZE),                 // wMaxPacketSize
