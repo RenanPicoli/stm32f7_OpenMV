@@ -282,7 +282,7 @@ __ALIGN_BEGIN uint8_t USBD_UVC_CfgHSDesc[USB_UVC_CONFIG_DESC_SIZ] __ALIGN_END =
 __ALIGN_BEGIN uint8_t USBD_UVC_CfgFSDesc[USB_UVC_CONFIG_DESC_SIZ] __ALIGN_END =
 {
 		 /* Configuration 1 */
-		  USB_CONFIGUARTION_DESC_SIZE,               // bLength                  9
+		  USB_CONFIGURATION_DESC_SIZE,               // bLength                  9
 		  USB_DESC_TYPE_CONFIGURATION,        		 // bDescriptorType          2
 		  WBVAL(USB_VIDEO_DESC_SIZ),
 		  0x02,                                      // bNumInterfaces           2
@@ -360,7 +360,7 @@ __ALIGN_BEGIN uint8_t USBD_UVC_CfgFSDesc[USB_UVC_CONFIG_DESC_SIZ] __ALIGN_END =
 		  /* Standard VS Interface Descriptor  = interface 1 */
 		  // alternate setting 0 = Zero Bandwidth
 		  USB_INTERFACE_DESC_SIZE,                   // bLength                  9
-		  USB_DESC_TYPE_INTERFACE,             // bDescriptorType          4
+		  USB_DESC_TYPE_INTERFACE,            		 // bDescriptorType          4
 		  USB_UVC_VSIF_NUM,                          // bInterfaceNumber         1 index of this interface
 		  0x00,                                      // bAlternateSetting        0 index of this setting
 		  0x00,                                      // bNumEndpoints            0 no EP used

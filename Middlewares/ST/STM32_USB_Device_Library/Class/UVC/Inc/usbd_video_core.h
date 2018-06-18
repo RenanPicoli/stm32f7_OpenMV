@@ -5,6 +5,7 @@
 
 #include "usbd_ioreq.h"
 //#include "usbd_req.h"
+#include "usbd_ctlreq.h"//@Pнoli: equivalente de usbd_req.h
 #include "usbd_desc.h"
 
 #define u8 uint8_t
@@ -40,7 +41,7 @@ typedef struct  _VideoControl{
 #define MAX_BIT_RATE                                  (unsigned long)(WIDTH*HEIGHT*16*CAM_FPS)
 //#define MAX_FRAME_SIZE                                (unsigned long)(WIDTH*HEIGHT*2)//yuy2
 //#define MAX_FRAME_SIZE                                (unsigned long)(WIDTH*HEIGHT*3/2)//nv12
-#define MAX_FRAME_SIZE                                (unsigned long)(20000)//приблизительная длина изображения
+#define MAX_FRAME_SIZE                                (unsigned long)(20000)
 #define INTERVAL                                      (unsigned long)(10000000/CAM_FPS)
 
 //#define PACKETS_IN_FRAME                              (unsigned int)(MAX_FRAME_SIZE/(VIDEO_PACKET_SIZE-2) + 1)
@@ -48,7 +49,7 @@ typedef struct  _VideoControl{
 
 
 #define USB_VIDEO_DESC_SIZ (unsigned long)(\
-			USB_CONFIGUARTION_DESC_SIZE +\
+			USB_CONFIGURATION_DESC_SIZE +\
 		    UVC_INTERFACE_ASSOCIATION_DESC_SIZE +\
 		    USB_INTERFACE_DESC_SIZE +  \
 		    UVC_VC_INTERFACE_HEADER_DESC_SIZE(1) + \
@@ -67,7 +68,7 @@ typedef struct  _VideoControl{
 
 
 #define USB_DEVICE_DESC_SIZE        (sizeof(USB_DEVICE_DESCRIPTOR))
-#define USB_CONFIGUARTION_DESC_SIZE (char)9
+#define USB_CONFIGURATION_DESC_SIZE (char)9
 #define USB_INTERFACE_DESC_SIZE     (char)9
 #define USB_ENDPOINT_DESC_SIZE      (char)7
 #define UVC_INTERFACE_ASSOCIATION_DESC_SIZE (char)8

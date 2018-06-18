@@ -100,7 +100,7 @@
 /*---------- -----------*/
 #define USBD_DEBUG_LEVEL     0
 /*---------- -----------*/
-#define USBD_LPM_ENABLED     1
+#define USBD_LPM_ENABLED     0 //@Pícoli: não quero implementar nada relativo ao Low Poewer Mode
 /*---------- -----------*/
 #define USBD_SELF_POWERED     1
 
