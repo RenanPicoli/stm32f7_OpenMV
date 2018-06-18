@@ -1,0 +1,5 @@
+usbd_uvc_if.c:183:15:UVC_Init_FS	8	static
+usbd_uvc_if.c:197:15:UVC_DeInit_FS	4	static
+usbd_uvc_if.c:211:15:UVC_Control_FS	16	static
+usbd_uvc_if.c:291:15:UVC_Receive_FS	16	static
+usbd_uvc_if.c:311:9:UVC_Transmit_FS	24	static
