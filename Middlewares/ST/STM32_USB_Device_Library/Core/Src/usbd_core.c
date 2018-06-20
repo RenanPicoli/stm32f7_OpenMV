@@ -153,8 +153,8 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
   * @param  pclass: Class handle
   * @retval USBD Status
   */
-//USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDef *pclass)
-USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, void *pclass)
+USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDef *pclass)
+//USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, void *pclass)
 {
   USBD_StatusTypeDef   status = USBD_OK;
   if(pclass != 0)
@@ -172,13 +172,13 @@ USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, void *pclass)
 		  //GetConfigDescriptor tem 2 args: speed e length; mas na VIDEO_cb, só usa length
 		  //GetFS,HS,OtherSpeedConfigDescriptor recebem só 1: length
 		  //GetFS,HS,OtherSpeedConfigDescriptor receberão partially_applied_function
-		  uint8_t * partially_applied_function (uint16_t *length){
-			  return (((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor)(0,length);
-		  }
-
-		  pdev->pClass->GetFSConfigDescriptor 			= partially_applied_function;
-		  pdev->pClass->GetHSConfigDescriptor 			= partially_applied_function;
-		  pdev->pClass->GetOtherSpeedConfigDescriptor 	= partially_applied_function;
+//		  uint8_t * partially_applied_function (uint16_t *length){
+//			  return (((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor)(0,length);
+//		  }
+//
+//		  pdev->pClass->GetFSConfigDescriptor 			= partially_applied_function;
+//		  pdev->pClass->GetHSConfigDescriptor 			= partially_applied_function;
+//		  pdev->pClass->GetOtherSpeedConfigDescriptor 	= partially_applied_function;
 		  pdev->pClass->GetDeviceQualifierDescriptor 	= NULL;
 		  status = USBD_OK;
 		  break;

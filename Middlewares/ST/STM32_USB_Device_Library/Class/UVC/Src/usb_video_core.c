@@ -83,7 +83,7 @@ VideoControl    videoProbeControl =
 };
 
 /* VIDEO interface class callbacks structure */
-USBD_Class_cb_TypeDef  VIDEO_cb =
+USBD_ClassTypeDef  VIDEO_cb =
 {
   CLASS_CB_TYPEDEF_TYPE,
   usbd_video_Init,
@@ -96,6 +96,7 @@ USBD_Class_cb_TypeDef  VIDEO_cb =
   usbd_video_SOF,
   usbd_video_IN_Incplt,
   usbd_video_OUT_Incplt ,
+  USBD_video_GetCfgDesc,
   USBD_video_GetCfgDesc,
 #ifdef USB_OTG_HS_CORE
   USBD_video_GetCfgDesc, /* use same config as per FS */

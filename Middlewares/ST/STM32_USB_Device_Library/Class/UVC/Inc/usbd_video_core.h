@@ -182,7 +182,7 @@ typedef struct _Video_Fops
 
 
 
-extern USBD_Class_cb_TypeDef  VIDEO_cb;
+extern USBD_ClassTypeDef  VIDEO_cb;
 
 
 
