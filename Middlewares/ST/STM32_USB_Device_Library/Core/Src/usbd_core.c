@@ -168,11 +168,17 @@ USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, void *pclass)
 	  case CLASS_CB_TYPEDEF_TYPE:
 		  /* Crio uma pClass de pdev (uma USBD_ClassTypedef) a partir dos campos de pclass*/
 		  pdev->pClass = pclass;//as duas classes diferem apenas quanto aos campos abaixo
-		  /*USBD_Class_cb_TypeDef* pCLASSE = (USBD_Class_cb_TypeDef*)pclass;
-		  pCLASSE->GetConfigDescriptor;*/
-		  pdev->pClass->GetFSConfigDescriptor = ((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor;
-		  pdev->pClass->GetHSConfigDescriptor = ((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor;
-		  pdev->pClass->GetOtherSpeedConfigDescriptor = ((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor;
+
+		  //GetConfigDescriptor tem 2 args: speed e length; mas na VIDEO_cb, só usa length
+		  //GetFS,HS,OtherSpeedConfigDescriptor recebem só 1: length
+		  //GetFS,HS,OtherSpeedConfigDescriptor receberão partially_applied_function
+		  uint8_t * partially_applied_function (uint16_t *length){
+			  return (((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor)(0,length);
+		  }
+
+		  pdev->pClass->GetFSConfigDescriptor = partially_applied_function;
+		  pdev->pClass->GetHSConfigDescriptor = partially_applied_function;
+		  pdev->pClass->GetOtherSpeedConfigDescriptor = partially_applied_function;
 		  pdev->pClass->GetDeviceQualifierDescriptor = NULL;
 		  status = USBD_OK;
 		  break;
