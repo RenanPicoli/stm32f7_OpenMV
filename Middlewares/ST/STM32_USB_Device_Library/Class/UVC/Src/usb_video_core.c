@@ -2,7 +2,7 @@
 #include "uvc.h"
 //#include "jprocess.h"
 
-#define USB_SETUP_REQ USBD_SetupReqTypedef
+//#define USB_SETUP_REQ USBD_SetupReqTypedef
 
 extern uint8_t *read_pointer;
 extern uint16_t last_jpeg_frame_size;
@@ -85,6 +85,7 @@ VideoControl    videoProbeControl =
 /* VIDEO interface class callbacks structure */
 USBD_Class_cb_TypeDef  VIDEO_cb =
 {
+  CLASS_CB_TYPEDEF_TYPE,
   usbd_video_Init,
   usbd_video_DeInit,
   usbd_video_Setup,
@@ -185,7 +186,7 @@ static uint8_t usbd_video_CfgDesc[] =
   /* Standard VS Interface Descriptor  = interface 1 */
   // alternate setting 0 = Zero Bandwidth
   USB_INTERFACE_DESC_SIZE,                   // bLength                  9
-  USB_INTERFACE_DESCRIPTOR_TYPE,             // bDescriptorType          4
+  USB_DESC_TYPE_INTERFACE,            		 // bDescriptorType          4
   USB_UVC_VSIF_NUM,                          // bInterfaceNumber         1 index of this interface
   0x00,                                      // bAlternateSetting        0 index of this setting
   0x00,                                      // bNumEndpoints            0 no EP used
@@ -253,7 +254,7 @@ static uint8_t usbd_video_CfgDesc[] =
   /* Standard VS Interface Descriptor  = interface 1 */
   // alternate setting 1 = operational setting
   USB_INTERFACE_DESC_SIZE,                   // bLength                  9
-  USB_INTERFACE_DESCRIPTOR_TYPE,             // bDescriptorType          4
+  USB_DESC_TYPE_INTERFACE,            		 // bDescriptorType          4
   USB_UVC_VSIF_NUM,                          // bInterfaceNumber         1 index of this interface
   0x01,                                      // bAlternateSetting        1 index of this setting
   0x01,                                      // bNumEndpoints            1 one EP used
@@ -284,7 +285,7 @@ static uint8_t  usbd_video_Init (void  *pdev,
   DCD_EP_Open(pdev,
 		      USB_ENDPOINT_IN(1),
 		      VIDEO_PACKET_SIZE,
-                      USB_OTG_EP_ISOC);
+			  USBD_EP_TYPE_ISOC);
 
   /* Initialize the Video Hardware layer */
 
@@ -359,10 +360,10 @@ static uint8_t  usbd_video_Setup (void  *pdev,
         usbd_video_AltSet = (uint8_t)(req->wValue);
 
         if (usbd_video_AltSet == 1) {
-        	STM_EVAL_LEDOn(LED5);
+        	//STM_EVAL_LEDOn(LED5);
         	play_status = 1;
         } else {
-        	STM_EVAL_LEDOff(LED5);
+        	//STM_EVAL_LEDOff(LED5);
         	DCD_EP_Flush (pdev,USB_ENDPOINT_IN(1));
         	play_status = 0;
         }

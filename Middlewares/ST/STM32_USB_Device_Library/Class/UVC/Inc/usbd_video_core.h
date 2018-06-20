@@ -8,6 +8,8 @@
 #include "usbd_ctlreq.h"//@Píoli: equivalente de usbd_req.h
 #include "usbd_desc.h"
 
+#include "usb_core.h"//@Pícoli: para USBD_Class_cb_TypeDef (do iliasam)
+
 #define u8 uint8_t
 //UVC 1.0 uses only 26 first bytes
 typedef struct  _VideoControl{

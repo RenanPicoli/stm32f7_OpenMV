@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    usbd_UVC.c
+  * @file    usbd_uvc.c
   * @author  MCD Application Team
   * @brief   This file provides the high layer firmware functions to manage the 
   *          following functionalities of the USB UVC Class:
@@ -166,6 +166,7 @@ __ALIGN_BEGIN static uint8_t USBD_UVC_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_
 /* UVC interface class callbacks structure */
 USBD_ClassTypeDef  USBD_UVC =
 {
+  CLASS_TYPEDEF_TYPE,
   USBD_UVC_Init,
   USBD_UVC_DeInit,
   USBD_UVC_Setup,

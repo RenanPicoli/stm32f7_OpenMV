@@ -51,6 +51,9 @@
 #define NULL  0
 #endif
 
+//@Pícoli: as duas structs definem basicamente a mesma coisa, mas USBD_Class_Typedef tem mais campos
+#define CLASS_TYPEDEF_TYPE 		0 	//formato USBD_ClassTypedef
+#define CLASS_CB_TYPEDEF_TYPE 	1	//formato USBD_Class_cb_TypeDef (código do Iliasam)
 
 #define  USB_LEN_DEV_QUALIFIER_DESC                     0x0A
 #define  USB_LEN_DEV_DESC                               0x12
@@ -143,7 +146,7 @@
   * @{
   */
 
-typedef  struct  usb_setup_req 
+typedef  struct  //usb_setup_req
 {
     
     uint8_t   bmRequest;                      
@@ -157,6 +160,7 @@ struct _USBD_HandleTypeDef;
     
 typedef struct _Device_cb
 {
+  uint8_t  ClassType;//@Pícoli:CLASS_TYPEDEF_TYPE ou CLASS_cb_TYPEDEF_TYPE
   uint8_t  (*Init)             (struct _USBD_HandleTypeDef *pdev , uint8_t cfgidx);
   uint8_t  (*DeInit)           (struct _USBD_HandleTypeDef *pdev , uint8_t cfgidx);
  /* Control Endpoints*/

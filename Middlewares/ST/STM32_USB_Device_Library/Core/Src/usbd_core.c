@@ -25,6 +25,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_core.h"
+#include "usb_core.h"//@pícoli: header do iliasam
 
 /** @addtogroup STM32_USBD_DEVICE_LIBRARY
 * @{
@@ -152,14 +153,32 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
   * @param  pclass: Class handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDef *pclass)
+//USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDef *pclass)
+USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, void *pclass)
 {
   USBD_StatusTypeDef   status = USBD_OK;
   if(pclass != 0)
   {
-    /* link the class to the USB Device handle */
-    pdev->pClass = pclass;
-    status = USBD_OK;
+	  switch(*(uint8_t *)pclass){
+	  case CLASS_TYPEDEF_TYPE:
+		  /*Simply link the class to the USB Device handle */
+		  pdev->pClass = pclass;
+		  status = USBD_OK;
+		  break;
+	  case CLASS_CB_TYPEDEF_TYPE:
+		  /* Crio uma pClass de pdev (uma USBD_ClassTypedef) a partir dos campos de pclass*/
+		  pdev->pClass = pclass;//as duas classes diferem apenas quanto aos campos abaixo
+		  /*USBD_Class_cb_TypeDef* pCLASSE = (USBD_Class_cb_TypeDef*)pclass;
+		  pCLASSE->GetConfigDescriptor;*/
+		  pdev->pClass->GetFSConfigDescriptor = ((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor;
+		  pdev->pClass->GetHSConfigDescriptor = ((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor;
+		  pdev->pClass->GetOtherSpeedConfigDescriptor = ((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor;
+		  pdev->pClass->GetDeviceQualifierDescriptor = NULL;
+		  status = USBD_OK;
+		  break;
+	  default:
+		  status = USBD_FAIL;
+	  }
   }
   else
   {

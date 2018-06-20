@@ -161,6 +161,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_
 /* CDC interface class callbacks structure */
 USBD_ClassTypeDef  USBD_CDC = 
 {
+  CLASS_TYPEDEF_TYPE,
   USBD_CDC_Init,
   USBD_CDC_DeInit,
   USBD_CDC_Setup,

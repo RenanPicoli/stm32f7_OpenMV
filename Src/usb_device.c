@@ -55,6 +55,8 @@
 #include "usbd_uvc.h"
 #include "usbd_uvc_if.h"
 
+#include "usbd_video_core.h"//para incluir declaração de VIDEO_cb
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -99,7 +101,7 @@ void MX_USB_DEVICE_Init(void)
   /* Init Device Library, add supported class and start the library. */
   USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS);
 
-  USBD_RegisterClass(&hUsbDeviceFS, &USBD_UVC);
+  USBD_RegisterClass(&hUsbDeviceFS, &VIDEO_cb);
 
   USBD_UVC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
 

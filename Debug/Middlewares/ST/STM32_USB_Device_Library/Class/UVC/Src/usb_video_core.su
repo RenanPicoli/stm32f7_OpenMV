@@ -1,0 +1,12 @@
+usb_video_core.c:280:17:usbd_video_Init	16	static
+usb_video_core.c:296:17:usbd_video_DeInit	16	static
+usb_video_core.c:306:17:usbd_video_Setup	24	static
+usb_video_core.c:383:17:usbd_video_EP0_RxReady	16	static
+usb_video_core.c:391:17:usbd_video_DataIn	24	static
+usb_video_core.c:468:17:usbd_video_DataOut	16	static
+usb_video_core.c:474:17:usbd_video_SOF	16	static
+usb_video_core.c:486:17:usbd_video_OUT_Incplt	16	static
+usb_video_core.c:491:17:usbd_video_IN_Incplt	16	static
+usb_video_core.c:500:13:VIDEO_Req_GetCurrent	16	static
+usb_video_core.c:520:13:VIDEO_Req_SetCurrent	16	static
+usb_video_core.c:556:18:USBD_video_GetCfgDesc	16	static
