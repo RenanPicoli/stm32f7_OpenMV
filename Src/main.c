@@ -52,16 +52,12 @@
 #include "usb_device.h"
 #include "gpio.h"
 
-/* USER CODE BEGIN Includes */
+//meus includes
+#include "jprocess.h"
 
-/* USER CODE END Includes */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE END PV */
+uint16_t last_jpeg_frame_size = 0;
+volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
+volatile uint8_t jpeg_encode_enabled = 1;//1 - capture and encoding enabled
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);

@@ -1,13 +1,13 @@
 #include "usbd_video_core.h"
 #include "uvc.h"
-//#include "jprocess.h"
+#include "jprocess.h"
 
 //#define USB_SETUP_REQ USBD_SetupReqTypedef
 
 extern uint8_t *read_pointer;
 extern uint16_t last_jpeg_frame_size;
 extern volatile uint8_t jpeg_encode_done;//1 - encode stopped
-extern volatile uint8_t new_frame_cap_enabled;
+extern volatile uint8_t jpeg_encode_enabled;
 
 /*********************************************
    VIDEO Device library callbacks
@@ -282,10 +282,11 @@ static uint8_t  usbd_video_Init (void  *pdev,
 {
 
     /* Open EP IN */
-  DCD_EP_Open(pdev,
+  /*DCD_EP_Open(pdev,
 		      USB_ENDPOINT_IN(1),
 		      VIDEO_PACKET_SIZE,
-			  USBD_EP_TYPE_ISOC);
+			  USBD_EP_TYPE_ISOC);//código original de Iliasam*/
+  HAL_PCD_EP_Open(pdev,USB_ENDPOINT_IN(1),VIDEO_PACKET_SIZE,USBD_EP_TYPE_ISOC);
 
   /* Initialize the Video Hardware layer */
 
@@ -296,7 +297,8 @@ static uint8_t  usbd_video_Init (void  *pdev,
 static uint8_t  usbd_video_DeInit (void  *pdev,
                                    uint8_t cfgidx)
 {
-  DCD_EP_Close (pdev , USB_ENDPOINT_IN(1));
+  //DCD_EP_Close (pdev , USB_ENDPOINT_IN(1));//de Iliasam
+	HAL_PCD_EP_Close(pdev,USB_ENDPOINT_IN(1));
 
   /* DeInitialize the Audio output Hardware layer */
 
@@ -364,7 +366,8 @@ static uint8_t  usbd_video_Setup (void  *pdev,
         	play_status = 1;
         } else {
         	//STM_EVAL_LEDOff(LED5);
-        	DCD_EP_Flush (pdev,USB_ENDPOINT_IN(1));
+        	//DCD_EP_Flush (pdev,USB_ENDPOINT_IN(1));//código original de Iliasam
+        	HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
         	play_status = 0;
         }
       }
@@ -402,7 +405,8 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
 
   static uint8_t tx_enable_flag = 0;
 
-  DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//very important
+  //DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//very important
+  HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
 
   if (tx_enable_flag) packets_cnt++;
 
@@ -412,7 +416,7 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
     {
       tx_enable_flag = 1;
       switch_buffers();//switch double buffering buffers
-      new_frame_cap_enabled = 1;//start new frame capture
+      jpeg_encode_enabled = 1;//start new frame capture
 
       //start of new UVC frame
       packets_cnt = 0;
@@ -438,17 +442,20 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
   {
     if (packets_cnt< (packets_in_frame - 1))
     {
-      DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
+      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
+      HAL_PCD_EP_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
     }
     else if (tx_enable_flag == 1)//only if transmisson enabled
     {
       //last packet in UVC frame
-      DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
+      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
+      HAL_PCD_EP_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
       tx_enable_flag = 0;//stop TX data
     }
     else
     {
-      DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header only
+      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header only
+      HAL_PCD_EP_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header only
       picture_pos = 0;
     }
   }
@@ -476,8 +483,10 @@ static uint8_t  usbd_video_SOF (void *pdev)
 
   if (play_status == 1)
   {
-	  DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
-	  DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)0x0002, 2);//header
+	  //DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//código de iliasam
+	  HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
+	  //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)0x0002, 2);//header
+	  HAL_PCD_EP_Transmit(pdev,USB_ENDPOINT_IN(1),(uint8_t*)0x0002, 2);
 	  play_status = 2;
   }
   return USBD_OK;
@@ -501,7 +510,8 @@ static void VIDEO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req)
 {
   /* Send the current mute state */
 
-  DCD_EP_Flush (pdev,USB_ENDPOINT_OUT(0));
+  //DCD_EP_Flush (pdev,USB_ENDPOINT_OUT(0));
+  HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_OUT(0));
 
   if(req->wValue == 256)
   {

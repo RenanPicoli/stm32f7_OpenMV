@@ -69,7 +69,7 @@
 //Iliasam files
 #include "usbd_video_core.h"
 #include "uvc.h"
-//#include "jprocess.h"
+#include "jprocess.h"
 
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY

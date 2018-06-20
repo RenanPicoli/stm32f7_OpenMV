@@ -176,10 +176,10 @@ USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, void *pclass)
 			  return (((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor)(0,length);
 		  }
 
-		  pdev->pClass->GetFSConfigDescriptor = partially_applied_function;
-		  pdev->pClass->GetHSConfigDescriptor = partially_applied_function;
-		  pdev->pClass->GetOtherSpeedConfigDescriptor = partially_applied_function;
-		  pdev->pClass->GetDeviceQualifierDescriptor = NULL;
+		  pdev->pClass->GetFSConfigDescriptor 			= partially_applied_function;
+		  pdev->pClass->GetHSConfigDescriptor 			= partially_applied_function;
+		  pdev->pClass->GetOtherSpeedConfigDescriptor 	= partially_applied_function;
+		  pdev->pClass->GetDeviceQualifierDescriptor 	= NULL;
 		  status = USBD_OK;
 		  break;
 	  default:
