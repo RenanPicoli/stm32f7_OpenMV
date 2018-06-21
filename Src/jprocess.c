@@ -16,11 +16,11 @@
 //uint8_t outbytes1[20000] __attribute__ ((section(".ccm")));
 
 //Buffer for encoded JPEG image
-uint8_t outbytes0[32000] __attribute__ ((section (".ccmram")));
-uint8_t outbytes1[32000] __attribute__ ((section (".ccmram")));
+uint8_t outbytes0[32000] __attribute__ ((section (".dtcmram")));
+uint8_t outbytes1[32000] __attribute__ ((section (".dtcmram")));
 
-uint8_t *write_pointer = (uint8_t*)outbytes0;//сюда записываютс¤ закодированные jpeg данные (кодером)
-uint8_t *read_pointer =  (uint8_t*)outbytes1;//отсода данные считываютс¤ при передаче
+uint8_t *write_pointer = (uint8_t*)outbytes0;
+uint8_t *read_pointer =  (uint8_t*)outbytes1;
 
 extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 

@@ -40,7 +40,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 512K
+DTCMRAM(rw)		: ORIGIN = 0x20000000, LENGTH = 128K
+RAM (xrw)      	: ORIGIN = 0x20020000, LENGTH = 384K
 FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 2048K
 }
 
@@ -108,6 +109,13 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
   } >FLASH
+
+  .dtcmram :
+  {
+  	. = ALIGN(4);
+  	*(.dtcmram)	/* seções .dtcmram */
+  	. = ALIGN(4);
+  } > DTCMRAM
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
