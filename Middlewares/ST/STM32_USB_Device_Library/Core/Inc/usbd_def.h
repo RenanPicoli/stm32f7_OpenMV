@@ -160,7 +160,6 @@ struct _USBD_HandleTypeDef;
     
 typedef struct _Device_cb
 {
-  uint8_t  ClassType;//@Pícoli:CLASS_TYPEDEF_TYPE ou CLASS_cb_TYPEDEF_TYPE
   uint8_t  (*Init)             (struct _USBD_HandleTypeDef *pdev , uint8_t cfgidx);
   uint8_t  (*DeInit)           (struct _USBD_HandleTypeDef *pdev , uint8_t cfgidx);
  /* Control Endpoints*/

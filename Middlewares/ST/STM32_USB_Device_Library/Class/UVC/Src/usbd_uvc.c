@@ -166,7 +166,6 @@ __ALIGN_BEGIN static uint8_t USBD_UVC_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_
 /* UVC interface class callbacks structure */
 USBD_ClassTypeDef  USBD_UVC =
 {
-  CLASS_TYPEDEF_TYPE,
   USBD_UVC_Init,
   USBD_UVC_DeInit,
   USBD_UVC_Setup,

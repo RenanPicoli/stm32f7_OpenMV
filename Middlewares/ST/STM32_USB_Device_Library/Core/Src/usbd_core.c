@@ -154,37 +154,13 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
   * @retval USBD Status
   */
 USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDef *pclass)
-//USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, void *pclass)
 {
   USBD_StatusTypeDef   status = USBD_OK;
   if(pclass != 0)
   {
-	  switch(*(uint8_t *)pclass){
-	  case CLASS_TYPEDEF_TYPE:
 		  /*Simply link the class to the USB Device handle */
 		  pdev->pClass = pclass;
 		  status = USBD_OK;
-		  break;
-	  case CLASS_CB_TYPEDEF_TYPE:
-		  /* Crio uma pClass de pdev (uma USBD_ClassTypedef) a partir dos campos de pclass*/
-		  pdev->pClass = pclass;//as duas classes diferem apenas quanto aos campos abaixo
-
-		  //GetConfigDescriptor tem 2 args: speed e length; mas na VIDEO_cb, só usa length
-		  //GetFS,HS,OtherSpeedConfigDescriptor recebem só 1: length
-		  //GetFS,HS,OtherSpeedConfigDescriptor receberão partially_applied_function
-//		  uint8_t * partially_applied_function (uint16_t *length){
-//			  return (((USBD_Class_cb_TypeDef*)pclass)->GetConfigDescriptor)(0,length);
-//		  }
-//
-//		  pdev->pClass->GetFSConfigDescriptor 			= partially_applied_function;
-//		  pdev->pClass->GetHSConfigDescriptor 			= partially_applied_function;
-//		  pdev->pClass->GetOtherSpeedConfigDescriptor 	= partially_applied_function;
-		  pdev->pClass->GetDeviceQualifierDescriptor 	= NULL;
-		  status = USBD_OK;
-		  break;
-	  default:
-		  status = USBD_FAIL;
-	  }
   }
   else
   {

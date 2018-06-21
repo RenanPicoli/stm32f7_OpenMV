@@ -27,7 +27,7 @@ static uint8_t  usbd_video_IN_Incplt (void  *pdev);
  *********************************************/
 static void VIDEO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req);
 static void VIDEO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req);
-static uint8_t  *USBD_video_GetCfgDesc (uint8_t speed, uint16_t *length);
+static uint8_t  *USBD_video_GetCfgDesc (uint16_t *length);
 void VIDEO_Req_GetRes(void *pdev, USB_SETUP_REQ *req);
 
 
@@ -85,7 +85,6 @@ VideoControl    videoProbeControl =
 /* VIDEO interface class callbacks structure */
 USBD_ClassTypeDef  VIDEO_cb =
 {
-  CLASS_CB_TYPEDEF_TYPE,
   usbd_video_Init,
   usbd_video_DeInit,
   usbd_video_Setup,
@@ -96,8 +95,10 @@ USBD_ClassTypeDef  VIDEO_cb =
   usbd_video_SOF,
   usbd_video_IN_Incplt,
   usbd_video_OUT_Incplt ,
-  USBD_video_GetCfgDesc,
-  USBD_video_GetCfgDesc,
+  USBD_video_GetCfgDesc,//GetHSConfigDescriptor
+  USBD_video_GetCfgDesc,//GetFSConfigDescriptor
+  USBD_video_GetCfgDesc,//GetOtherSpeedConfigDescriptor
+  NULL //GetDeviceQualifierDescriptor
 #ifdef USB_OTG_HS_CORE
   USBD_video_GetCfgDesc, /* use same config as per FS */
 #endif
@@ -560,11 +561,10 @@ void VIDEO_Req_GetRes(void *pdev, USB_SETUP_REQ *req)
 /**
   * @brief  USBD_video_GetCfgDesc
   *         Returns configuration descriptor.
-  * @param  speed : current device speed
   * @param  length : pointer data length
   * @retval pointer to descriptor buffer
   */
-static uint8_t  *USBD_video_GetCfgDesc (uint8_t speed, uint16_t *length)
+static uint8_t  *USBD_video_GetCfgDesc (uint16_t *length)
 {
   *length = sizeof (usbd_video_CfgDesc);
   return usbd_video_CfgDesc;
