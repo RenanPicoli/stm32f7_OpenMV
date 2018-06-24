@@ -125,6 +125,8 @@ int main(void)
 		  draw_circle((int)circle_x, (int)circle_y, 15, color);
 
 		  jpeg_encode_done = 1;//encoding ended
+
+		  HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
 		  //STM_EVAL_LEDToggle(LED3);
 		}
 
