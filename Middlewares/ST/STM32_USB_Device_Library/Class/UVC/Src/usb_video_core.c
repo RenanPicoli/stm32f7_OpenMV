@@ -14,23 +14,23 @@ extern volatile uint8_t jpeg_encode_enabled;
 /*********************************************
    VIDEO Device library callbacks
  *********************************************/
-static uint8_t  usbd_video_Init       (void  *pdev, uint8_t cfgidx);
-static uint8_t  usbd_video_DeInit     (void  *pdev, uint8_t cfgidx);
-static uint8_t  usbd_video_Setup      (void  *pdev, USB_SETUP_REQ *req);
-static uint8_t  usbd_video_EP0_RxReady(void *pdev);
-static uint8_t  usbd_video_DataIn     (void *pdev, uint8_t epnum);
-static uint8_t  usbd_video_DataOut    (void *pdev, uint8_t epnum);
-static uint8_t  usbd_video_SOF        (void *pdev);
-static uint8_t  usbd_video_OUT_Incplt (void  *pdev);
-static uint8_t  usbd_video_IN_Incplt (void  *pdev);
+static uint8_t  usbd_video_Init       (USBD_HandleTypeDef  *pdev, uint8_t cfgidx);
+static uint8_t  usbd_video_DeInit     (USBD_HandleTypeDef  *pdev, uint8_t cfgidx);
+static uint8_t  usbd_video_Setup      (USBD_HandleTypeDef  *pdev, USBD_SetupReqTypedef *req);
+static uint8_t  usbd_video_EP0_RxReady(USBD_HandleTypeDef  *pdev);
+static uint8_t  usbd_video_DataIn     (USBD_HandleTypeDef  *pdev, uint8_t epnum);
+static uint8_t  usbd_video_DataOut    (USBD_HandleTypeDef  *pdev, uint8_t epnum);
+static uint8_t  usbd_video_SOF        (USBD_HandleTypeDef  *pdev);
+static uint8_t  usbd_video_OUT_Incplt (USBD_HandleTypeDef  *pdev, uint8_t epnum);
+static uint8_t  usbd_video_IN_Incplt  (USBD_HandleTypeDef  *pdev, uint8_t epnum);
 
 /*********************************************
    VIDEO Requests management functions
  *********************************************/
-static void VIDEO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req);
-static void VIDEO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req);
+static void VIDEO_Req_GetCurrent(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
+static void VIDEO_Req_SetCurrent(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
 static uint8_t  *USBD_video_GetCfgDesc (uint16_t *length);
-void VIDEO_Req_GetRes(void *pdev, USB_SETUP_REQ *req);
+void VIDEO_Req_GetRes(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
 
 
 static uint32_t  usbd_video_AltSet = 0;//number of current interface alternative setting
@@ -281,7 +281,7 @@ static uint8_t usbd_video_CfgDesc[] =
 
 
 
-static uint8_t  usbd_video_Init (void  *pdev,
+static uint8_t  usbd_video_Init (USBD_HandleTypeDef  *pdev,
                                  uint8_t cfgidx)
 {
 
@@ -290,7 +290,9 @@ static uint8_t  usbd_video_Init (void  *pdev,
 		      USB_ENDPOINT_IN(1),
 		      VIDEO_PACKET_SIZE,
 			  USBD_EP_TYPE_ISOC);//código original de Iliasam*/
-  HAL_PCD_EP_Open(pdev,USB_ENDPOINT_IN(1),VIDEO_PACKET_SIZE,USBD_EP_TYPE_ISOC);
+  //HAL_PCD_EP_Open(pdev,USB_ENDPOINT_IN(1),VIDEO_PACKET_SIZE,USBD_EP_TYPE_ISOC);
+
+  USBD_LL_OpenEP(pdev,USB_ENDPOINT_IN(1),USBD_EP_TYPE_ISOC,VIDEO_PACKET_SIZE);
 
   /* Initialize the Video Hardware layer */
 
@@ -298,19 +300,20 @@ static uint8_t  usbd_video_Init (void  *pdev,
 }
 
 
-static uint8_t  usbd_video_DeInit (void  *pdev,
+static uint8_t  usbd_video_DeInit (USBD_HandleTypeDef  *pdev,
                                    uint8_t cfgidx)
 {
   //DCD_EP_Close (pdev , USB_ENDPOINT_IN(1));//de Iliasam
-	HAL_PCD_EP_Close(pdev,USB_ENDPOINT_IN(1));
+	//HAL_PCD_EP_Close(pdev->pData,USB_ENDPOINT_IN(1));
+	USBD_LL_CloseEP(pdev,USB_ENDPOINT_IN(1));
 
   /* DeInitialize the Audio output Hardware layer */
 
   return USBD_OK;
 }
 
-static uint8_t  usbd_video_Setup (void  *pdev,
-                                  USB_SETUP_REQ *req)
+static uint8_t  usbd_video_Setup (USBD_HandleTypeDef  *pdev,
+		USBD_SetupReqTypedef *req)
 {
   uint16_t len;
   uint8_t  *pbuf;
@@ -372,7 +375,8 @@ static uint8_t  usbd_video_Setup (void  *pdev,
         } else {
         	//STM_EVAL_LEDOff(LED5);
         	//DCD_EP_Flush (pdev,USB_ENDPOINT_IN(1));//código original de Iliasam
-        	HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
+        	//HAL_PCD_EP_Flush(pdev->pData,USB_ENDPOINT_IN(1));
+        	USBD_LL_FlushEP(pdev,USB_ENDPOINT_IN(1));
         	play_status = 0;
         	//HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,GPIO_PIN_SET);//apaga vermelho
         }
@@ -389,7 +393,7 @@ static uint8_t  usbd_video_Setup (void  *pdev,
 }
 
 
-static uint8_t  usbd_video_EP0_RxReady (void  *pdev)
+static uint8_t  usbd_video_EP0_RxReady (USBD_HandleTypeDef  *pdev)
 {
   return USBD_OK;
 }
@@ -397,7 +401,7 @@ static uint8_t  usbd_video_EP0_RxReady (void  *pdev)
 
 //handle request from HOST <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //send data to PC
-static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
+static uint8_t  usbd_video_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
   ITM_SendChar('V');
   static uint16_t packets_cnt = 0xffff;
@@ -413,7 +417,8 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
   static uint8_t tx_enable_flag = 0;
 
   //DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//very important
-  HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
+  //HAL_PCD_EP_Flush(pdev->pData,USB_ENDPOINT_IN(1));
+  USBD_LL_FlushEP(pdev,USB_ENDPOINT_IN(1));
 
   if (tx_enable_flag) packets_cnt++;
 
@@ -450,20 +455,23 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
     if (packets_cnt< (packets_in_frame - 1))
     {
       //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
-      HAL_PCD_EP_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
+      //HAL_PCD_EP_Transmit (pdev->pData,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
+      USBD_LL_Transmit(pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
     }
     else if (tx_enable_flag == 1)//only if transmisson enabled
     {
       //last packet in UVC frame
       //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
-      HAL_PCD_EP_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
+      //HAL_PCD_EP_Transmit (pdev->pData,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
+    	USBD_LL_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
       tx_enable_flag = 0;//stop TX data
       picture_pos = 0;//@Pícoli: adicionei p/ ficar igual ao código do capitão
     }
     else
     {
       //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header only
-      HAL_PCD_EP_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header only
+      //HAL_PCD_EP_Transmit (pdev->pData,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header only
+      USBD_LL_Transmit(pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header only
       picture_pos = 0;
     }
   }
@@ -480,32 +488,34 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
 
 
 
-static uint8_t  usbd_video_DataOut (void *pdev, uint8_t epnum)
+static uint8_t  usbd_video_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
   return USBD_OK;
 }
 
 
-static uint8_t  usbd_video_SOF (void *pdev)
+static uint8_t  usbd_video_SOF (USBD_HandleTypeDef *pdev)
 {
-
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//azul ligado
   if (play_status == 1)
   {
 	  //DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//código de iliasam
-	  HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
+	  //HAL_PCD_EP_Flush(pdev->pData,USB_ENDPOINT_IN(1));
+	  USBD_LL_FlushEP(pdev,USB_ENDPOINT_IN(1));
 	  //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)0x0002, 2);//header
-	  HAL_PCD_EP_Transmit(pdev,USB_ENDPOINT_IN(1),(uint8_t*)0x0002, 2);
+	  //HAL_PCD_EP_Transmit(pdev->pData,USB_ENDPOINT_IN(1),(uint8_t*)0x0002, 2);
+	  USBD_LL_Transmit(pdev,USB_ENDPOINT_IN(1), (uint8_t*)0x0002, 2);//header
 	  play_status = 2;
   }
   return USBD_OK;
 }
 
-static uint8_t  usbd_video_OUT_Incplt (void  *pdev)
+static uint8_t  usbd_video_OUT_Incplt (USBD_HandleTypeDef  *pdev, uint8_t epnum)
 {
 	return USBD_OK;
 }
 
-static uint8_t  usbd_video_IN_Incplt (void  *pdev)
+static uint8_t  usbd_video_IN_Incplt (USBD_HandleTypeDef  *pdev, uint8_t epnum)
 {
 	return USBD_OK;
 }
@@ -514,12 +524,13 @@ static uint8_t  usbd_video_IN_Incplt (void  *pdev)
 
 
 //CLASS SPECIFIC REQUEST
-static void VIDEO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req)
+static void VIDEO_Req_GetCurrent(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
   /* Send the current mute state */
 
   //DCD_EP_Flush (pdev,USB_ENDPOINT_OUT(0));
-  HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_OUT(0));
+  //HAL_PCD_EP_Flush(pdev->pData,USB_ENDPOINT_OUT(0));
+	USBD_LL_FlushEP(pdev,USB_ENDPOINT_OUT(0));
 
   if(req->wValue == 256)
   {
@@ -535,7 +546,7 @@ static void VIDEO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req)
 }
 
 //PC SEND DATA TO uC
-static void VIDEO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req)
+static void VIDEO_Req_SetCurrent(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
 
   if (req->wLength)

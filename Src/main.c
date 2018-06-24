@@ -55,7 +55,7 @@
 //meus includes
 #include "math.h"
 #include "jprocess.h"
-extern volatile uint8_t play_status;
+extern volatile uint8_t play_status;//apenas para debug no loop infinito
 
 uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 
