@@ -2,6 +2,7 @@
 #include "uvc.h"
 #include "jprocess.h"
 
+#include "core_cm7.h"
 //#define USB_SETUP_REQ USBD_SetupReqTypedef
 
 extern uint8_t *read_pointer;
@@ -395,6 +396,7 @@ static uint8_t  usbd_video_EP0_RxReady (void  *pdev)
 //send data to PC
 static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
 {
+  ITM_SendChar('V');
   static uint16_t packets_cnt = 0xffff;
   static uint8_t header[2] = {2,0};//length + data
   uint16_t i;
@@ -453,6 +455,7 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
       //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
       HAL_PCD_EP_Transmit (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
       tx_enable_flag = 0;//stop TX data
+      picture_pos = 0;//@Pícoli: adicionei p/ ficar igual ao código do capitão
     }
     else
     {
@@ -464,7 +467,7 @@ static uint8_t  usbd_video_DataIn (void *pdev, uint8_t epnum)
   else
   {
     packets_cnt = 0xffff;
-    picture_pos = 0;
+    //picture_pos = 0;//@Pícoli: mudei p/ ficar igual ao código do capitão
   }
 
 

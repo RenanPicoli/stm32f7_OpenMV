@@ -135,6 +135,7 @@ int main(void)
 
 void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
 {
+  ITM_SendChar('D');
   int x = radius;
   int y = 0;
   int xChange = 1 - (radius << 1);

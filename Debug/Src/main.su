@@ -1,4 +1,7 @@
-main.c:79:5:main	8	static
-main.c:126:6:SystemClock_Config	232	static
-main.c:204:6:_Error_Handler	16	static
-main.c:222:6:assert_failed	16	static
+core_cm7.h:2447:26:ITM_SendChar	16	static
+main.c:83:5:main	16	static
+main.c:136:6:draw_circle	48	static
+main.c:172:6:delay_ms	24	static
+main.c:187:6:SystemClock_Config	232	static
+main.c:265:6:_Error_Handler	16	static
+main.c:283:6:assert_failed	16	static
