@@ -3,6 +3,7 @@
 #include "jprocess.h"
 
 #include "core_cm7.h"
+//#include "stm32f7xx_hal_gpio.h"
 //#define USB_SETUP_REQ USBD_SetupReqTypedef
 
 extern uint8_t *read_pointer;
@@ -366,12 +367,14 @@ static uint8_t  usbd_video_Setup (void  *pdev,
 
         if (usbd_video_AltSet == 1) {
         	//STM_EVAL_LEDOn(LED5);
+        	//HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,GPIO_PIN_RESET);//acende vermelho
         	play_status = 1;
         } else {
         	//STM_EVAL_LEDOff(LED5);
         	//DCD_EP_Flush (pdev,USB_ENDPOINT_IN(1));//código original de Iliasam
         	HAL_PCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));
         	play_status = 0;
+        	//HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,GPIO_PIN_SET);//apaga vermelho
         }
       }
       else

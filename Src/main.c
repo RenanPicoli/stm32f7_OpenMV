@@ -55,6 +55,7 @@
 //meus includes
 #include "math.h"
 #include "jprocess.h"
+extern volatile uint8_t play_status;
 
 uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 
@@ -112,6 +113,9 @@ int main(void)
   while (1)
   {
 	  i++;
+	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(play_status==2)));//green led is on when running
+	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==1)));//red led is on when play_status=1
+
 	  if (jpeg_encode_enabled == 1)
 		{
 		  jpeg_encode_enabled = 0;
@@ -126,7 +130,7 @@ int main(void)
 
 		  jpeg_encode_done = 1;//encoding ended
 
-		  HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
+		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
 		  //STM_EVAL_LEDToggle(LED3);
 		}
 
