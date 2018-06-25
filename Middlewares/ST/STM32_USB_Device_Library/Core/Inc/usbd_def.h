@@ -33,7 +33,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_conf.h"
-#include "stm32f7xx_hal_pcd.h"//para PCD_HandleTypedef * pData
 
 /** @addtogroup STM32_USBD_DEVICE_LIBRARY
   * @{
@@ -247,7 +246,7 @@ typedef struct _USBD_HandleTypeDef
   USBD_ClassTypeDef       *pClass;
   void                    *pClassData;  
   void                    *pUserData;    
-  PCD_HandleTypeDef       *pData;//pcd handle
+  void					  *pData;//pcd handle
 } USBD_HandleTypeDef;
 
 /**
