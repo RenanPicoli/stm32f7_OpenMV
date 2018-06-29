@@ -421,7 +421,7 @@ static uint8_t  usbd_video_EP0_RxReady (USBD_HandleTypeDef  *pdev)
 //send data to PC
 static uint8_t  usbd_video_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
-  ITM_SendChar('V');
+//  ITM_SendChar('V');
   static uint16_t packets_cnt = 0xffff;
   static uint8_t header[2] = {2,0};//length + data
   uint16_t i;
@@ -442,7 +442,7 @@ static uint8_t  usbd_video_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
 
   if (tx_enable_flag == 0)//if previous transmission ended
   {
-    if (jpeg_encode_done)//if frame endoding ended
+    if (jpeg_encode_done)//if frame encoding ended
     {
       tx_enable_flag = 1;
       switch_buffers();//switch double buffering buffers
@@ -465,7 +465,7 @@ static uint8_t  usbd_video_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
   for (i=2;i<VIDEO_PACKET_SIZE;i++)
   {
     packet[i] = read_pointer[picture_pos];
-	//packet[i] = myBuffer[picture_pos];
+	packet[i] = ((uint8_t)picture_pos>>8);
     picture_pos++;
   }
 
@@ -476,6 +476,7 @@ static uint8_t  usbd_video_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
       //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
       //HAL_PCD_EP_Transmit (pdev->pData,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
       USBD_LL_Transmit(pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
+//      printf("%p\n",read_pointer);
     }
     else if (tx_enable_flag == 1)//only if transmisson enabled
     {
@@ -517,7 +518,7 @@ static uint8_t  usbd_video_SOF (USBD_HandleTypeDef *pdev)
 {
   //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//azul ligado
   HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);
-  ITM_SendChar('S');
+//  ITM_SendChar('S');
   if (play_status == 1)
   {
 	  //DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//código de iliasam
