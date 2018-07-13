@@ -339,7 +339,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 
   HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS, 64);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 32);
-  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 512);//0x80);
+  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 224);//0x80);
   }
   return USBD_OK;
 }
