@@ -465,7 +465,7 @@ static uint8_t  usbd_video_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
   for (i=2;i<VIDEO_PACKET_SIZE;i++)
   {
     packet[i] = read_pointer[picture_pos];
-	packet[i] = ((uint8_t)picture_pos>>8);
+	//packet[i] = ((uint8_t)picture_pos);
     picture_pos++;
   }
 
