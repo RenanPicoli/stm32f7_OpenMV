@@ -93,16 +93,8 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
@@ -122,10 +114,9 @@ int main(void)
   //2-phase read
   HAL_I2C_Master_Receive(hi2c1,42,&pid,1,10);
 
-  /* USER CODE END 2 */
+
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1)
   {
 	  i++;
@@ -151,13 +142,11 @@ int main(void)
 		}
 
   }
-  /* USER CODE END 3 */
 
 }
 
 void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
 {
-//  ITM_SendChar('D');
   int x = radius;
   int y = 0;
   int xChange = 1 - (radius << 1);

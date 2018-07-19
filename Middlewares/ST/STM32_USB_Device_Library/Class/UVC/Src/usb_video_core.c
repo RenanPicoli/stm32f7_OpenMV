@@ -516,9 +516,6 @@ static uint8_t  usbd_video_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum)
 
 static uint8_t  usbd_video_SOF (USBD_HandleTypeDef *pdev)
 {
-  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//azul ligado
-  HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);
-//  ITM_SendChar('S');
   if (play_status == 1)
   {
 	  //DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//código de iliasam
