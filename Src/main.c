@@ -59,6 +59,8 @@ extern volatile uint8_t play_status;//apenas para debug no loop infinito
 
 uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 
+I2C_HandleTypeDef hi2c1;
+
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
 volatile uint8_t jpeg_encode_enabled = 1;//1 - capture and encoding enabled
@@ -75,6 +77,7 @@ void Fail_Handler(void);
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_I2C1_Init(void);
 
 /**
   * @brief  The application entry point.
@@ -104,7 +107,20 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
+
   /* USER CODE BEGIN 2 */
+  //camera uses I2C1, PB8=SCL and PB9=SDA
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  MX_I2C1_Init();
+  //test if camera is present
+  uint8_t msg[]={0x0A,0x0B};
+  //2-phase write
+  HAL_I2C_Master_Transmit(hi2c1,43,msg,1,10);//qual a unidade do timeout? ms
+  msg++;
+  uint8_t pid = 0;
+  //2-phase read
+  HAL_I2C_Master_Receive(hi2c1,42,&pid,1,10);
 
   /* USER CODE END 2 */
 
@@ -239,8 +255,17 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
+  //configura o clock do USB
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
   PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLL;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  //configura o clock do I2C1
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C1;
+  PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -258,9 +283,40 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-/* USER CODE BEGIN 4 */
+/* I2C1 init function */
+static void MX_I2C1_Init(void)
+{
 
-/* USER CODE END 4 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x6000030D;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_ENABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Analogue filter
+    */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Digital filter
+    */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
 
 /**
   * @brief  This function is executed in case of error occurrence.
