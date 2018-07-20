@@ -106,22 +106,28 @@ int main(void)
 
   MX_I2C1_Init();
   //test if camera is present
-  uint8_t msg[]={0x0A,0x0B};
-  //2-phase write
-  HAL_I2C_Master_Transmit(hi2c1,43,msg,1,10);//qual a unidade do timeout? ms
-  msg++;
+  uint8_t PID_REG = 0x0A;
   uint8_t pid = 0;
+  HAL_StatusTypeDef status;
+
+  //2-phase write
+  status = HAL_I2C_Master_Transmit(&hi2c1,0x42>>1,&PID_REG,1,1000);//qual a unidade do timeout? ms
+
   //2-phase read
-  HAL_I2C_Master_Receive(hi2c1,42,&pid,1,10);
+  status = HAL_I2C_Master_Receive(&hi2c1,0x42>>1,&pid,1,1000);
 
+  //status = HAL_I2C_Mem_Read(&hi2c1,0x42>>1,PID_REG,I2C_MEMADD_SIZE_8BIT,&pid,1,1000);
 
+  //testa se obteve a resposta esperada
+  if(pid == 0x77){
+	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
+  }
 
   /* Infinite loop */
   while (1)
   {
 	  i++;
-	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(play_status==2)));//green led is on when running
-	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==1)));//red led is on when play_status=1
+	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
 
 	  if (jpeg_encode_enabled == 1)
 		{
@@ -276,33 +282,33 @@ void SystemClock_Config(void)
 static void MX_I2C1_Init(void)
 {
 
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x6000030D;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_ENABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+	  hi2c1.Instance = I2C1;
+	  hi2c1.Init.Timing = 0x40912732; // 100KHz
+	  hi2c1.Init.OwnAddress1 = 0;
+	  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	  hi2c1.Init.OwnAddress2 = 0;
+	  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+	  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+	  {
+	    _Error_Handler(__FILE__, __LINE__);
+	  }
 
-    /**Configure Analogue filter
-    */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+	    /**Configure Analogue filter
+	    */
+	  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+	  {
+	    _Error_Handler(__FILE__, __LINE__);
+	  }
 
-    /**Configure Digital filter
-    */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+	    /**Configure Digital filter
+	    */
+	  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+	  {
+	    _Error_Handler(__FILE__, __LINE__);
+	  }
 
 }
 
