@@ -52,14 +52,21 @@
 #include "usb_device.h"
 #include "gpio.h"
 
-//meus includes
+/* USER CODE BEGIN Includes */
 #include "math.h"
 #include "jprocess.h"
+/* USER CODE END Includes */
+
+/* Private variables ---------------------------------------------------------*/
+
+DCMI_HandleTypeDef hdcmi;
+I2C_HandleTypeDef hi2c1;
+
+/* USER CODE BEGIN PV */
+/* Private variables ---------------------------------------------------------*/
 extern volatile uint8_t play_status;//apenas para debug no loop infinito
 
 uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
-
-I2C_HandleTypeDef hi2c1;
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
@@ -70,14 +77,24 @@ double circle_y = 0;
 double angle = 0;
 uint8_t color;
 
-void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
-void TimingDelay_Decrement(void);
-void Delay(__IO uint32_t nTime);
-void Fail_Handler(void);
+/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_I2C1_Init(void);
+
+/* USER CODE BEGIN PFP */
+/* Private function prototypes -----------------------------------------------*/
+void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
+void TimingDelay_Decrement(void);
+void Delay(__IO uint32_t nTime);
+void Fail_Handler(void);
+/* USER CODE END PFP */
+
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
+
 
 /**
   * @brief  The application entry point.
@@ -86,25 +103,36 @@ static void MX_I2C1_Init(void);
   */
 int main(void)
 {
-	int i = 0;
+
+  /* USER CODE BEGIN 1 */
+  int i = 0;
+  /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
   /* Configure the system clock */
   SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
+  MX_I2C1_Init();
 
   /* USER CODE BEGIN 2 */
   //camera uses I2C1, PB8=SCL and PB9=SDA
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  MX_I2C1_Init();
 
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);//camera resets
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);//camera NOT in powerdown
@@ -147,9 +175,15 @@ int main(void)
 
 	//inicialização do DCMI
 
+	/* USER CODE END 2 */
+
   /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  /* USER CODE END WHILE */
+
+	  /* USER CODE BEGIN 3 */
 	  i++;
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
 
@@ -172,54 +206,9 @@ int main(void)
 		}
 
   }
+  /* USER CODE END 3 */
 
 }
-
-void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
-{
-  int x = radius;
-  int y = 0;
-  int xChange = 1 - (radius << 1);
-  int yChange = 0;
-  int radiusError = 0;
-  int i;
-  //int p = 3 - 2 * radius;
-
-  while (x >= y)
-  {
-    for (i = Hcenter - x; i <= Hcenter + x; i++)
-    {
-      raw_image[Vcenter + y][i] = color;
-      raw_image[Vcenter - y][i] = color;
-    }
-    for (i = Hcenter - y; i <= Hcenter + y; i++)
-    {
-      raw_image[Vcenter + x][i] = color;
-      raw_image[Vcenter - x][i] = color;
-    }
-
-    y++;
-    radiusError += yChange;
-    yChange += 2;
-    if (((radiusError << 1) + xChange) > 0)
-    {
-      x--;
-      radiusError += xChange;
-      xChange += 2;
-    }
-  }
-}
-
-void delay_ms(uint32_t ms)
-{
-        volatile uint32_t nCount;
-        //RCC_ClocksTypeDef RCC_Clocks;
-        //RCC_GetClocksFreq (&RCC_Clocks);
-        //nCount=(RCC_Clocks.HCLK_Frequency/10000)*ms;
-        nCount=(HAL_RCC_GetHCLKFreq()/10000)*ms;
-        for (; nCount!=0; nCount--);
-}
-
 
 /**
   * @brief System Clock Configuration
@@ -341,6 +330,52 @@ static void MX_I2C1_Init(void)
 
 }
 
+/* USER CODE BEGIN 4 */
+void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
+{
+  int x = radius;
+  int y = 0;
+  int xChange = 1 - (radius << 1);
+  int yChange = 0;
+  int radiusError = 0;
+  int i;
+  //int p = 3 - 2 * radius;
+
+  while (x >= y)
+  {
+    for (i = Hcenter - x; i <= Hcenter + x; i++)
+    {
+      raw_image[Vcenter + y][i] = color;
+      raw_image[Vcenter - y][i] = color;
+    }
+    for (i = Hcenter - y; i <= Hcenter + y; i++)
+    {
+      raw_image[Vcenter + x][i] = color;
+      raw_image[Vcenter - x][i] = color;
+    }
+
+    y++;
+    radiusError += yChange;
+    yChange += 2;
+    if (((radiusError << 1) + xChange) > 0)
+    {
+      x--;
+      radiusError += xChange;
+      xChange += 2;
+    }
+  }
+}
+
+void delay_ms(uint32_t ms)
+{
+        volatile uint32_t nCount;
+        //RCC_ClocksTypeDef RCC_Clocks;
+        //RCC_GetClocksFreq (&RCC_Clocks);
+        //nCount=(RCC_Clocks.HCLK_Frequency/10000)*ms;
+        nCount=(HAL_RCC_GetHCLKFreq()/10000)*ms;
+        for (; nCount!=0; nCount--);
+}
+/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
