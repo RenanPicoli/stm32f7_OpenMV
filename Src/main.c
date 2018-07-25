@@ -106,11 +106,11 @@ int main(void)
 
   MX_I2C1_Init();
 
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);//camera resets
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);//camera NOT in powerdown
 
   HAL_Delay(400);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);//camera restarts
   HAL_Delay(40);
 
   uint8_t msg=0x0A;
@@ -144,6 +144,8 @@ int main(void)
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
   }
 */
+
+	//inicialização do DCMI
 
   /* Infinite loop */
   while (1)
