@@ -39,6 +39,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f7xx_hal.h"
+#include "dcmi.h"
+#include "dma.h"
 #include "i2c.h"
 
 #include "gpio.h"
@@ -114,8 +116,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
 
+  MX_DCMI_Init();
   /* USER CODE BEGIN 2 */
 
   //Configuração dos LEDs
@@ -176,7 +180,7 @@ int main(void)
   }
 */
 
-	//inicialização do DCMI
+  HAL_DCMI_Start_DMA(&hdcmi,DCMI_MODE_CONTINUOUS,raw_image,320*240);
 
   /* USER CODE END 2 */
 
@@ -200,7 +204,7 @@ int main(void)
 		  circle_y = 120 + cos(angle)*60;
 		  angle+= 0.05;
 		  color+= 10;
-		  draw_circle((int)circle_x, (int)circle_y, 15, color);
+		  //draw_circle((int)circle_x, (int)circle_y, 15, color);
 
 		  jpeg_encode_done = 1;//encoding ended
 
