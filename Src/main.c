@@ -49,6 +49,7 @@
 #include "math.h"
 #include "jprocess.h"
 #include "usb_device.h"
+#include "ov7725_regs.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -153,24 +154,24 @@ int main(void)
   //while(1){
 	for(j=0x40;j<0x44;j+=2){
 		if(HAL_I2C_IsDeviceReady(&hi2c1,j,10, 1000)==HAL_OK){
-			HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
+			//HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
 			break;
 		}
 	}
   //HAL_Delay(100);
   //}
 
-/*
+
   //test if camera is present
   uint8_t PID_REG = 0x0A;
   uint8_t pid = 0;
   HAL_StatusTypeDef status;
 
   //2-phase write
-  status = HAL_I2C_Master_Transmit(&hi2c1,0x42>>1,&PID_REG,1,1000);//qual a unidade do timeout? ms
+  status = HAL_I2C_Master_Transmit(&hi2c1,0x42,&PID_REG,1,1000);//qual a unidade do timeout? ms
 
   //2-phase read
-  status = HAL_I2C_Master_Receive(&hi2c1,0x42>>1,&pid,1,1000);
+  status = HAL_I2C_Master_Receive(&hi2c1,0x42,&pid,1,1000);
 
   //status = HAL_I2C_Mem_Read(&hi2c1,0x42>>1,PID_REG,I2C_MEMADD_SIZE_8BIT,&pid,1,1000);
 
@@ -178,9 +179,12 @@ int main(void)
   if(pid == 0x77){
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
   }
-*/
 
-  HAL_DCMI_Start_DMA(&hdcmi,DCMI_MODE_CONTINUOUS,raw_image,320*240);
+  //CONFIGURAR AO MENOS COM7 E COM10 NA CÂMERA
+
+	//hdcmi->Instance->
+
+	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
 
   /* USER CODE END 2 */
 
