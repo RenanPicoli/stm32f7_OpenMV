@@ -49,6 +49,7 @@
 #include "math.h"
 #include "jprocess.h"
 #include "usb_device.h"
+#include "ov7725.h"
 #include "ov7725_regs.h"
 /* USER CODE END Includes */
 
@@ -58,6 +59,9 @@
 /* Private variables ---------------------------------------------------------*/
 extern volatile uint8_t play_status;//apenas para debug no loop infinito
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+
+#define I2C_TIMEOUT     (1000)
+extern const uint8_t default_regs[][2];
 
 uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 
@@ -79,6 +83,8 @@ void SystemClock_Config(void);
 /* Private function prototypes -----------------------------------------------*/
 void OTG_FS_IRQHandler(void);
 void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
+void sensor_config();
+int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data);
 void TimingDelay_Decrement(void);
 void Delay(__IO uint32_t nTime);
 void Fail_Handler(void);
@@ -149,42 +155,37 @@ int main(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);//camera restarts
   HAL_Delay(40);
 
-  uint8_t msg=0x0A;
   uint8_t j=0;
-  //while(1){
-	for(j=0x40;j<0x44;j+=2){
-		if(HAL_I2C_IsDeviceReady(&hi2c1,j,10, 1000)==HAL_OK){
-			//HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
-			break;
-		}
+  for(j=0x40;j<0x44;j+=2){
+	if(HAL_I2C_IsDeviceReady(&hi2c1,j,10, I2C_TIMEOUT)==HAL_OK){
+	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
+	  break;
 	}
+  }
   //HAL_Delay(100);
-  //}
-
 
   //test if camera is present
-  uint8_t PID_REG = 0x0A;
+  uint8_t PID_REG = PID;
   uint8_t pid = 0;
   HAL_StatusTypeDef status;
 
   //2-phase write
-  status = HAL_I2C_Master_Transmit(&hi2c1,0x42,&PID_REG,1,1000);//qual a unidade do timeout? ms
+  status = HAL_I2C_Master_Transmit(&hi2c1,OV7725_I2C_ADDRESS,&PID_REG,1,I2C_TIMEOUT);//qual a unidade do timeout? ms
 
   //2-phase read
-  status = HAL_I2C_Master_Receive(&hi2c1,0x42,&pid,1,1000);
-
-  //status = HAL_I2C_Mem_Read(&hi2c1,0x42>>1,PID_REG,I2C_MEMADD_SIZE_8BIT,&pid,1,1000);
+  status = HAL_I2C_Master_Receive(&hi2c1,OV7725_I2C_ADDRESS,&pid,1,I2C_TIMEOUT);
 
   //testa se obteve a resposta esperada
-  if(pid == 0x77){
+  if(pid == OV7725_ID){
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
   }
 
   //CONFIGURAR AO MENOS COM7 E COM10 NA CÂMERA
+  sensor_config();//registradores voltam para o valor de reset
 
-	//hdcmi->Instance->
+  //hdcmi->Instance->
 
-	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
 
   /* USER CODE END 2 */
 
@@ -346,6 +347,41 @@ void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
       xChange += 2;
     }
   }
+}
+
+void sensor_config()
+{
+    int i=0;
+    const uint8_t (*regs)[2];
+
+    // Reset all registers
+    camera_writeb(OV7725_I2C_ADDRESS, COM7, COM7_RESET);
+
+    // Delay 10 ms
+    HAL_Delay(10);
+
+    // Write default registers
+    for (i=0, regs = default_regs; regs[i][0]; i++) {
+        camera_writeb(OV7725_I2C_ADDRESS, regs[i][0], regs[i][1]);
+    }
+
+    // Delay
+    HAL_Delay(30);
+
+    return;
+}
+
+int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data)
+{
+    int ret=0;
+    uint8_t buf[] = {reg_addr, reg_data};
+
+    __disable_irq();
+    if(HAL_I2C_Master_Transmit(&hi2c1, slv_addr, buf, 2, I2C_TIMEOUT) != HAL_OK) {
+        ret = -1;
+    }
+    __enable_irq();
+    return ret;
 }
 
 void delay_ms(uint32_t ms)
