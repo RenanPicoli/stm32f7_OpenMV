@@ -63,7 +63,8 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 #define I2C_TIMEOUT     (1000)
 extern const uint8_t default_regs[][2];
 
-uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((section (".dtcmram")));
+extern unsigned char inBMP2[];
+uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
@@ -141,11 +142,15 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+
+  //SCB_CleanDCache_by_Addr((uint32_t*)inBMP2,320*240);//flush D cache for source memory address. Do I need to wait?
+  //SCB_InvalidateDCache_by_Addr((uint32_t*)raw_image,320*240);//invalidate D cache for destin. memory addr. Need to wait?
   MX_DMA_Init();
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
   MX_I2C1_Init();
 
   MX_USB_DEVICE_Init();
-  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
+
 
   //camera uses I2C1, PB8=SCL and PB9=SDA
   __HAL_RCC_GPIOB_CLK_ENABLE();

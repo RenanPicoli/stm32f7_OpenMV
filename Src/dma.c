@@ -40,11 +40,10 @@
 #include "dma.h"
 #include "params.h"
 
+/* USER CODE BEGIN 0 */
 extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 extern const unsigned char inBMP2[];
-
-/* USER CODE BEGIN 0 */
-
+DMA_HandleTypeDef dma;
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -68,7 +67,6 @@ void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
 
-  DMA_HandleTypeDef dma;
   dma.Instance = DMA2_Stream1;
   dma.Init.Channel = DMA_CHANNEL_3;
   dma.Init.Direction = DMA_MEMORY_TO_MEMORY;//TESTE: COPIAR UM BUFFER PARA OUTRO LUGAR
