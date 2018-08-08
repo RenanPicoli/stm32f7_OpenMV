@@ -123,7 +123,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
+  //MX_DMA_Init();
   MX_I2C1_Init();
 
   MX_DCMI_Init();
@@ -185,7 +185,7 @@ int main(void)
 
   //hdcmi->Instance->
 
-  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
+  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
 
   /* USER CODE END 2 */
 
