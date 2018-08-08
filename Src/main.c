@@ -63,7 +63,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 #define I2C_TIMEOUT     (1000)
 extern const uint8_t default_regs[][2];
 
-uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((section (".dtcmram")));
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
@@ -121,12 +121,7 @@ int main(void)
 
   /* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_I2C1_Init();
-
-  MX_DCMI_Init();
+  //MX_DCMI_Init();
   /* USER CODE BEGIN 2 */
 
   //Configuração dos LEDs
@@ -144,7 +139,14 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_SET);//green off
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_SET);//blue off
 
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_I2C1_Init();
+
   MX_USB_DEVICE_Init();
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
+
   //camera uses I2C1, PB8=SCL and PB9=SDA
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -177,7 +179,7 @@ int main(void)
 
   //testa se obteve a resposta esperada
   if(pid == OV7725_ID){
-	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
+	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
   }
 
   //CONFIGURAR AO MENOS COM7 E COM10 NA CÂMERA
@@ -185,7 +187,8 @@ int main(void)
 
   //hdcmi->Instance->
 
-  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
+  //HAL_NVIC_DisableIRQ(DMA2_Stream1_IRQn);//desabilito IRQ do DMA como no projeto OpenMV
+  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
 
   /* USER CODE END 2 */
 
@@ -198,6 +201,8 @@ int main(void)
   /* USER CODE BEGIN 3 */
 	  i++;
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
+	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
+
 
 	  if (jpeg_encode_enabled == 1)
 		{
@@ -205,16 +210,17 @@ int main(void)
 		  jpeg_encode_done = 0;
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
 
+/*
 		  circle_x = 160 + sin(angle)*60;
 		  circle_y = 120 + cos(angle)*60;
 		  angle+= 0.05;
 		  color+= 10;
-		  //draw_circle((int)circle_x, (int)circle_y, 15, color);
+		  draw_circle((int)circle_x, (int)circle_y, 15, color);
+*/
 
 		  jpeg_encode_done = 1;//encoding ended
 
 		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
-		  //STM_EVAL_LEDToggle(LED3);
 		}
 
   }

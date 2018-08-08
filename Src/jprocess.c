@@ -16,8 +16,8 @@
 //uint8_t outbytes1[20000] __attribute__ ((section(".ccm")));
 
 //Buffer for encoded JPEG image
-uint8_t outbytes0[32000] __attribute__ ((section (".dtcmram")));
-uint8_t outbytes1[32000] __attribute__ ((section (".dtcmram")));
+uint8_t outbytes0[20000] __attribute__ ((section (".dtcmram")));
+uint8_t outbytes1[20000] __attribute__ ((section (".dtcmram")));
 
 uint8_t *write_pointer = (uint8_t*)outbytes0;
 uint8_t *read_pointer =  (uint8_t*)outbytes1;
@@ -734,8 +734,8 @@ unsigned int jprocess(void)
     { 
       //pointer - upper left pixel
       //process_quadro_block process 4 blocks (2 horizontal and 2 vertical)
-      //process_quadro_block((UINT8*)(inBMP2+0x436 + xcount*DCTSIZE + ycount*IMG_WIDTH));//Data source for encoder - BMP image in FLASH
-      process_quadro_block((UINT8*)((uint8_t*)&raw_image + xcount*DCTSIZE + ycount*IMG_WIDTH));//Data source for encoder - RAM array "raw_image"
+      process_quadro_block((UINT8*)(inBMP2+0x436 + xcount*DCTSIZE + ycount*IMG_WIDTH));//Data source for encoder - BMP image in FLASH
+      //process_quadro_block((UINT8*)((uint8_t*)&raw_image + xcount*DCTSIZE + ycount*IMG_WIDTH));//Data source for encoder - RAM array "raw_image"
       
       //Next blocks by X
       xcount = xcount+2;
