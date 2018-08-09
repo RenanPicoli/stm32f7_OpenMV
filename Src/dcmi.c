@@ -49,6 +49,7 @@
 
 DCMI_HandleTypeDef hdcmi;
 DMA_HandleTypeDef hdma_dcmi;
+extern DMA_HandleTypeDef dma;
 
 /* DCMI init function */
 void MX_DCMI_Init(void)
@@ -146,13 +147,13 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     {
       _Error_Handler(__FILE__, __LINE__);
     }
+*/
+    __HAL_LINKDMA(dcmiHandle,DMA_Handle,dma);
 
-    __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_dcmi);
-
-     DCMI interrupt Init
+    /*DCMI interrupt Init*/
     HAL_NVIC_SetPriority(DCMI_IRQn, 0, 0);
 
-    HAL_NVIC_EnableIRQ(DCMI_IRQn);*/
+    HAL_NVIC_EnableIRQ(DCMI_IRQn);
 
     /* USER CODE BEGIN DCMI_MspInit 1 */
 

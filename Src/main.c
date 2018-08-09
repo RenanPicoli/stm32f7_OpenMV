@@ -129,7 +129,7 @@ int main(void)
   MX_DMA_Init();
   MX_I2C1_Init();
 
-  //MX_DCMI_Init();
+  MX_DCMI_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -148,11 +148,8 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_SET);//green off
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_SET);//blue off
 
-  //MX_DMA_Init();
-  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
-
   MX_USB_DEVICE_Init();
-
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
 
   //camera uses I2C1, PB8=SCL and PB9=SDA
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -194,7 +191,7 @@ int main(void)
 
   //hdcmi->Instance->
 
-  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
 
   /* USER CODE END 2 */
 
