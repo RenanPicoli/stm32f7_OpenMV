@@ -63,6 +63,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 #define I2C_TIMEOUT     (1000)
 extern const uint8_t default_regs[][2];
 
+extern unsigned char inBMP2[];
 uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 
 uint16_t last_jpeg_frame_size = 0;
@@ -118,15 +119,18 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  //SCB_CleanDCache_by_Addr((uint32_t*)inBMP2,320*240);//flush D cache for source memory address. Do I need to wait?
+  //SCB_InvalidateDCache_by_Addr((uint32_t*)raw_image,320*240);//invalidate D cache for destin. memory addr. Need to wait?
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_DMA_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
 
-  MX_DCMI_Init();
+  //MX_DCMI_Init();
+
   /* USER CODE BEGIN 2 */
 
   //Configuração dos LEDs
@@ -144,7 +148,12 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_SET);//green off
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_SET);//blue off
 
+  //MX_DMA_Init();
+  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
+
   MX_USB_DEVICE_Init();
+
+
   //camera uses I2C1, PB8=SCL and PB9=SDA
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -177,7 +186,7 @@ int main(void)
 
   //testa se obteve a resposta esperada
   if(pid == OV7725_ID){
-	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
+	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
   }
 
   //CONFIGURAR AO MENOS COM7 E COM10 NA CÂMERA
@@ -198,6 +207,8 @@ int main(void)
   /* USER CODE BEGIN 3 */
 	  i++;
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
+	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
+
 
 	  if (jpeg_encode_enabled == 1)
 		{
@@ -205,16 +216,17 @@ int main(void)
 		  jpeg_encode_done = 0;
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
 
+/*
 		  circle_x = 160 + sin(angle)*60;
 		  circle_y = 120 + cos(angle)*60;
 		  angle+= 0.05;
 		  color+= 10;
-		  //draw_circle((int)circle_x, (int)circle_y, 15, color);
+		  draw_circle((int)circle_x, (int)circle_y, 15, color);
+*/
 
 		  jpeg_encode_done = 1;//encoding ended
 
 		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
-		  //STM_EVAL_LEDToggle(LED3);
 		}
 
   }

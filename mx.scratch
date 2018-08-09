@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>D:\Users\renan\Atollic\TrueSTUDIO\STM32_workspace_9.0\cube_jun17_attempt\\cube_jun17_attempt</ProjectName>
+<ProjectName>D:\Users\renan\Atollic\TrueSTUDIO\STM32_workspace_9.0\stm32f7_OpenMV\\stm32f7_OpenMV</ProjectName>
 <ProjectNature>C</ProjectNature> 
 <CMSIS>..\Drivers\CMSIS</CMSIS>
 <HAL_Driver>C:\Users\renan\STM32Cube\Repository\STM32Cube_FW_F7_V1.11.0\Drivers\CMSIS</HAL_Driver>
@@ -22,7 +22,7 @@
 
 <configs>
   <config>
-    <name>cube_jun17_attempt</name>				
+    <name>stm32f7_OpenMV</name>				
     <device>STM32F765VITx</device>		 
     <heapSize>0x200</heapSize>
     <stackSize>0x400</stackSize>
@@ -61,8 +61,6 @@
 	   <include>..\Inc</include>
 	   <include>..\Drivers\STM32F7xx_HAL_Driver\Inc</include>
 	   <include>..\Drivers\STM32F7xx_HAL_Driver\Inc\Legacy</include>
-	   <include>..\Middlewares\ST\STM32_USB_Device_Library\Core\Inc</include>
-	   <include>..\Middlewares\ST\STM32_USB_Device_Library\Class\CDC\Inc</include>
 	   <include>..\Drivers\CMSIS\Device\ST\STM32F7xx\Include</include>
 	   <include>..\Drivers\CMSIS\Include</include>
 
@@ -83,9 +81,6 @@
 		    	<sourceEntry>
 		    		<name>Drivers</name>
 		    	</sourceEntry>
-		    		<sourceEntry>
-		    			<name>Middlewares</name>
-		    		</sourceEntry>
 		    </sourceEntries>
 
 </Project>

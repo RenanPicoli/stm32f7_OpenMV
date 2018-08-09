@@ -38,9 +38,12 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "dma.h"
+#include "params.h"
 
 /* USER CODE BEGIN 0 */
-
+extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+extern const unsigned char inBMP2[];
+DMA_HandleTypeDef dma;
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -64,6 +67,24 @@ void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
 
+  dma.Instance = DMA2_Stream1;
+  dma.Init.Channel = DMA_CHANNEL_3;
+  dma.Init.Direction = DMA_MEMORY_TO_MEMORY;//TESTE: COPIAR UM BUFFER PARA OUTRO LUGAR
+  dma.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  dma.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  dma.Init.MemBurst = DMA_MBURST_SINGLE;
+  dma.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  dma.Init.MemInc  = DMA_MINC_ENABLE;
+  dma.Init.Mode = DMA_NORMAL;
+  dma.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  dma.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  dma.Init.PeriphInc = DMA_PINC_ENABLE;//TESTE: DMA_SxPAR FUNCIONA COMO FONTE
+  dma.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+
+  HAL_DMA_Init(&dma);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+
+  HAL_DMA_Start_IT(&dma,(uint32_t)inBMP2,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
 }
 
 /* USER CODE BEGIN 2 */
