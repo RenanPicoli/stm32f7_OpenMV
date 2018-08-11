@@ -44,6 +44,10 @@
 extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 extern const unsigned char inBMP2[];
 DMA_HandleTypeDef dma;
+
+uint8_t contagem[IMG_HEIGHT][IMG_WIDTH];
+
+void initContagem(void);
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -84,10 +88,24 @@ void MX_DMA_Init(void)
   HAL_DMA_Init(&dma);
   //HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
+  initContagem();//gera uma imagem com um gradiente horizontal, mais clara a direita
+  HAL_DMA_Start_IT(&dma,(uint32_t)(inBMP2+0x436),(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
+  //HAL_DMA_Start_IT(&dma,(uint32_t)contagem,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
   //HAL_DMA_Start_IT(&dma,(uint32_t)DCMI->DR,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
 }
 
 /* USER CODE BEGIN 2 */
+
+void initContagem(void) {
+		for(int i=0; i<IMG_HEIGHT; i++){//linha
+			for(int j=0; j<256; j++){//coluna
+				contagem[i][j] = j;
+			}
+			for(int j=256; j<IMG_WIDTH; j++){//coluna
+				contagem[i][j] = 255;
+			}
+		}
+};
 
 /* USER CODE END 2 */
 

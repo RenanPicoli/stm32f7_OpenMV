@@ -64,7 +64,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern const uint8_t default_regs[][2];
 
 extern unsigned char inBMP2[];
-uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
