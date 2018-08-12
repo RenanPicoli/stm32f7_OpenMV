@@ -17,17 +17,17 @@
 #include "omv_boardconfig.h"
 
 const uint8_t default_regs[][2] = {
-    {COM3,          COM3_SWAP_YUV},
-    {COM7,          COM7_RES_VGA | COM7_FMT_RGB565 | COM7_FMT_RGB},
+    {COM3,          0x00},//COM3_SWAP_YUV},
+    {COM7,          COM7_RES_QVGA | COM7_FMT_RGB565 | COM7_FMT_YUV},
 
-    {COM4,          OMV_OV7725_PLL_CONFIG},
-    {CLKRC,         0xC0}, /* Res/Bypass pre-scalar */
+    {COM4,          COM4_PLL_BYPASS|COM4_AEC_FULL},
+    {CLKRC,         0xC0}, /* Bypass pre-scalar */
 
     // VGA Window Size
-    {HSTART,        0x23},
-    {HSIZE,         0xA0},
-    {VSTART,        0x07},
-    {VSIZE,         0xF0},
+    {HSTART,        0x3F},
+    {HSIZE,         0x50},
+    {VSTART,        0x03},
+    {VSIZE,         0x78},
     {HREF,          0x00},
 
     // Scale down to QVGA Resolution
@@ -49,6 +49,7 @@ const uint8_t default_regs[][2] = {
 
     {COM8,          0xF0},
     {COM6,          0xC5},
+	{COM10,			COM10_HSYNC_EN},
     {COM9,          0x21},
     {BDBASE,        0x7F},
     {BDSTEP,        0x03},

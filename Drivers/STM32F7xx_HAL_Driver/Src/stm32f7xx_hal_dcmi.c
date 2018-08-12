@@ -91,6 +91,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
 
+#include "params.h"
+extern uint8_t contagem[IMG_HEIGHT][IMG_WIDTH];
 /** @addtogroup STM32F7xx_HAL_Driver
   * @{
   */
@@ -329,6 +331,7 @@ HAL_StatusTypeDef HAL_DCMI_Start_DMA(DCMI_HandleTypeDef* hdcmi, uint32_t DCMI_Mo
   {
     /* Enable the DMA Stream */
     HAL_DMA_Start_IT(hdcmi->DMA_Handle, (uint32_t)&hdcmi->Instance->DR, (uint32_t)pData, Length);
+	//HAL_DMA_Start_IT(hdcmi->DMA_Handle, (uint32_t)contagem, (uint32_t)pData, Length);
   }
   else /* DCMI_DOUBLE_BUFFER Mode */
   {

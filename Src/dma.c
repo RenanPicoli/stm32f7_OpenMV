@@ -44,6 +44,7 @@
 extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 extern const unsigned char inBMP2[];
 DMA_HandleTypeDef dma;
+extern HAL_StatusTypeDef status;
 
 uint8_t contagem[IMG_HEIGHT][IMG_WIDTH];
 
@@ -76,21 +77,20 @@ void MX_DMA_Init(void)
   dma.Init.Direction = DMA_PERIPH_TO_MEMORY;//TESTE: COPIAR UM BUFFER PARA OUTRO LUGAR
   dma.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
   dma.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-  dma.Init.MemBurst = DMA_MBURST_SINGLE;
-  dma.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  dma.Init.MemBurst = DMA_MBURST_INC4;//????????? copiei de openmv
+  dma.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
   dma.Init.MemInc  = DMA_MINC_ENABLE;
   dma.Init.Mode = DMA_NORMAL;
-  dma.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  dma.Init.PeriphBurst = DMA_PBURST_SINGLE;//??????? copiei de openmv
   dma.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
   dma.Init.PeriphInc = DMA_PINC_DISABLE;//TESTE: DMA_SxPAR FUNCIONA COMO FONTE
   dma.Init.Priority = DMA_PRIORITY_VERY_HIGH;
 
-  HAL_DMA_Init(&dma);
-  //HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+  status = HAL_DMA_Init(&dma);
 
   initContagem();//gera uma imagem com um gradiente horizontal, mais clara a direita
-  HAL_DMA_Start_IT(&dma,(uint32_t)(inBMP2+0x436),(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
-  //HAL_DMA_Start_IT(&dma,(uint32_t)contagem,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
+  //HAL_DMA_Start_IT(&dma,(uint32_t)(inBMP2+0x436),(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
+  HAL_DMA_Start_IT(&dma,(uint32_t)contagem,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
   //HAL_DMA_Start_IT(&dma,(uint32_t)DCMI->DR,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
 }
 

@@ -65,6 +65,7 @@ extern const uint8_t default_regs[][2];
 
 extern unsigned char inBMP2[];
 uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
+HAL_StatusTypeDef status;
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
@@ -126,10 +127,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
+  //MX_DMA_Init();
   MX_I2C1_Init();
 
-  MX_DCMI_Init();
+  //MX_DCMI_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -149,7 +150,7 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_SET);//blue off
 
   MX_USB_DEVICE_Init();
-  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
+  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
 
   //camera uses I2C1, PB8=SCL and PB9=SDA
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -173,7 +174,6 @@ int main(void)
   //test if camera is present
   uint8_t PID_REG = PID;
   uint8_t pid = 0;
-  HAL_StatusTypeDef status;
 
   //2-phase write
   status = HAL_I2C_Master_Transmit(&hi2c1,OV7725_I2C_ADDRESS,&PID_REG,1,I2C_TIMEOUT);//qual a unidade do timeout? ms
@@ -183,15 +183,18 @@ int main(void)
 
   //testa se obteve a resposta esperada
   if(pid == OV7725_ID){
-	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
+	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,GPIO_PIN_RESET);//led green on if camera is present
   }
 
   //CONFIGURAR AO MENOS COM7 E COM10 NA CÂMERA
   sensor_config();//registradores voltam para o valor de reset
+  MX_DMA_Init();
+  //MX_DCMI_Init();
 
   //hdcmi->Instance->
 
-  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
+  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
+  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x4B00);//size=320*240/4
 
   /* USER CODE END 2 */
 
@@ -204,6 +207,7 @@ int main(void)
   /* USER CODE BEGIN 3 */
 	  i++;
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
+	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(status!=HAL_OK)));//red green ON if something is NOT OK
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
 
 
