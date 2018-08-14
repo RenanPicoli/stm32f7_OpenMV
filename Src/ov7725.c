@@ -21,7 +21,7 @@ const uint8_t default_regs[][2] = {
 		//OV7720, YCbCr, VGA
 		//15fps at 24MHz input clock, 4x maximum gain
 		//2/27/2007
-
+		{0x0c, 0x10},//@pícoli
 		{0x3d, 0x03},
 		{0x17, 0x22},
 		{0x18, 0xa4},

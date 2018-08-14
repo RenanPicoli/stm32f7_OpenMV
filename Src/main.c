@@ -69,7 +69,7 @@ HAL_StatusTypeDef status;
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
-volatile uint8_t jpeg_encode_enabled = 1;//1 - capture and encoding enabled
+volatile uint8_t jpeg_encode_enabled = 0;//1 - capture and encoding enabled
 
 double circle_x = 0;
 double circle_y = 0;
@@ -193,8 +193,6 @@ int main(void)
 
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
   HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x4B00);//size=320*240/4
-
-
 
   /* USER CODE END 2 */
 
