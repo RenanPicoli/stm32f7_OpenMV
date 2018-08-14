@@ -189,12 +189,12 @@ int main(void)
   //CONFIGURAR AO MENOS COM7 E COM10 NA CÂMERA
   sensor_config();//registradores voltam para o valor de reset
   MX_DMA_Init();
-  //MX_DCMI_Init();
-
-  //hdcmi->Instance->
+  MX_DCMI_Init();
 
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
-  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x4B00);//size=320*240/4
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x4B00);//size=320*240/4
+
+
 
   /* USER CODE END 2 */
 

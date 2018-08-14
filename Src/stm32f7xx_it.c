@@ -36,7 +36,9 @@
 #include "stm32f7xx_it.h"
 
 /* USER CODE BEGIN 0 */
+#include "params.h"
 
+extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -204,7 +206,16 @@ void DMA2_Stream1_IRQHandler(void)
   /* USER CODE END DMA2_Stream1_IRQn 0 */
   HAL_DMA_IRQHandler(&dma);
   /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
-
+	//for(int i=0; i<IMG_HEIGHT; i++){//linha
+		//for(int j=0; j<IMG_WIDTH; j++){//coluna
+			//raw_image[i][j] >>= 4;//drops chroma components
+			//raw_image[i][j] *= 16;
+			//raw_image[i][j] &= 0xF0;
+			//raw_image[i][j] &= 0x0F;
+			//raw_image[i][j] = 0x60 & 0xF0;
+		//}
+	//}
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
   /* USER CODE END DMA2_Stream1_IRQn 1 */
 }
 
