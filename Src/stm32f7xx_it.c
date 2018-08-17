@@ -217,7 +217,7 @@ void DMA2_Stream1_IRQHandler(void)
 		}
 	}*/
   	jpeg_encode_enabled = 1;
-    HAL_DCMI_Stop(&hdcmi);
+    //HAL_DCMI_Stop(&hdcmi);
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
   /* USER CODE END DMA2_Stream1_IRQn 1 */
 }

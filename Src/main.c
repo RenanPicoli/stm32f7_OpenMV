@@ -187,12 +187,12 @@ int main(void)
   }
 
   //CONFIGURAR AO MENOS COM7 E COM10 NA CÂMERA
-  sensor_config();//registradores voltam para o valor de reset
+  sensor_config();//configura os registradores da câmera
   MX_DMA_Init();
   MX_DCMI_Init();
 
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
-  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x4B00);//size=320*240/4
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
   /* USER CODE END 2 */
 
@@ -211,8 +211,10 @@ int main(void)
 
 	  if (jpeg_encode_enabled == 1)
 		{
+		  HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
 		  jpeg_encode_enabled = 0;
 		  jpeg_encode_done = 0;
+
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
 
 /*
@@ -224,7 +226,7 @@ int main(void)
 */
 
 		  jpeg_encode_done = 1;//encoding ended
-
+		  HAL_DCMI_Resume(&hdcmi);
 		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
 		}
 

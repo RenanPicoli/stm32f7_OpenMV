@@ -80,7 +80,7 @@ void MX_DMA_Init(void)
   dma.Init.MemBurst = DMA_MBURST_INC4;//????????? copiei de openmv
   dma.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
   dma.Init.MemInc  = DMA_MINC_ENABLE;
-  dma.Init.Mode = DMA_NORMAL;
+  dma.Init.Mode = DMA_CIRCULAR;//necessário para captura contínua
   dma.Init.PeriphBurst = DMA_PBURST_SINGLE;//??????? copiei de openmv
   dma.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
   dma.Init.PeriphInc = DMA_PINC_DISABLE;//TESTE: DMA_SxPAR FUNCIONA COMO FONTE
