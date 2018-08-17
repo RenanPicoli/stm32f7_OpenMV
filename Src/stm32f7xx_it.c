@@ -211,9 +211,9 @@ void DMA2_Stream1_IRQHandler(void)
 		for(int j=0; j<IMG_WIDTH; j++){//coluna
 			//raw_image[i][j] >>= 4;//drops chroma components
 			//raw_image[i][j] *= 16;
-			raw_image[i][j] &= 0xF0;
+			//raw_image[i][j] &= 0xF0;
 			//raw_image[i][j] &= 0x0F;
-			//raw_image[i][j] = 0x60 & 0xF0;
+			raw_image[i][j] = 0x60;
 		}
 	}*/
   	jpeg_encode_enabled = 1;
