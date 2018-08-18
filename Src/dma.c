@@ -41,7 +41,7 @@
 #include "params.h"
 
 /* USER CODE BEGIN 0 */
-extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+extern uint8_t* raw_image;
 extern const unsigned char inBMP2[];
 DMA_HandleTypeDef dma;
 extern HAL_StatusTypeDef status;
@@ -88,7 +88,7 @@ void MX_DMA_Init(void)
 
   status = HAL_DMA_Init(&dma);
 
-  initContagem();//gera uma imagem com um gradiente horizontal, mais clara a direita
+  //initContagem();//gera uma imagem com um gradiente horizontal, mais clara a direita
   //HAL_DMA_Start_IT(&dma,(uint32_t)(inBMP2+0x436),(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
   //HAL_DMA_Start_IT(&dma,(uint32_t)contagem,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);
   //HAL_DMA_Start_IT(&dma,(uint32_t)DCMI->DR,(uint32_t)raw_image,IMG_WIDTH*IMG_HEIGHT/4);

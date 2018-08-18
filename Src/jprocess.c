@@ -22,7 +22,7 @@ uint8_t outbytes1[32000] __attribute__ ((section (".dtcmram")));
 uint8_t *write_pointer = (uint8_t*)outbytes0;
 uint8_t *read_pointer =  (uint8_t*)outbytes1;
 
-extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+extern uint8_t* raw_image;
 
 //»спользовать *outbytes_p дл¤ вывода в outbytes
 #define USE_OUTBYTES

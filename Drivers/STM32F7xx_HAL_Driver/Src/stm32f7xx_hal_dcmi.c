@@ -111,8 +111,8 @@ extern uint8_t contagem[IMG_HEIGHT][IMG_WIDTH];
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static void       DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma);
-static void       DCMI_DMAError(DMA_HandleTypeDef *hdma);
+void       DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma);
+void       DCMI_DMAError(DMA_HandleTypeDef *hdma);
 
 /* Exported functions --------------------------------------------------------*/
 
@@ -806,7 +806,7 @@ uint32_t HAL_DCMI_GetError(DCMI_HandleTypeDef *hdcmi)
   *                the configuration information for the specified DMA module.
   * @retval None
   */
-static void DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma)
+void DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma)
 {
   uint32_t tmp = 0;
 
@@ -863,7 +863,7 @@ static void DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma)
   *                the configuration information for the specified DMA module.
   * @retval None
   */
-static void DCMI_DMAError(DMA_HandleTypeDef *hdma)
+void DCMI_DMAError(DMA_HandleTypeDef *hdma)
 {
   DCMI_HandleTypeDef* hdcmi = ( DCMI_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
  

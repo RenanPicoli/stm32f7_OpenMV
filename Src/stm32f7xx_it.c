@@ -38,7 +38,9 @@
 /* USER CODE BEGIN 0 */
 #include "params.h"
 
-extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+extern uint8_t* raw_image;
+extern uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH];
+extern uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH];
 extern uint8_t jpeg_encode_enabled;
 /* USER CODE END 0 */
 
@@ -203,7 +205,13 @@ void SysTick_Handler(void)
 void DMA2_Stream1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
-
+  //para evitar que novos frames recebidos atrapalhem a compressão
+  //raw _image será usada em jprocess, não pode ser o vetor usado pelo DMA
+  if(hdcmi.DMA_Handle->Instance->CR & DMA_SxCR_CT){
+	  raw_image = (uint8_t*)raw_image0;
+  }else{
+	  raw_image = (uint8_t*)raw_image1;
+  }
   /* USER CODE END DMA2_Stream1_IRQn 0 */
   HAL_DMA_IRQHandler(&dma);
   /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
@@ -217,7 +225,6 @@ void DMA2_Stream1_IRQHandler(void)
 		}
 	}*/
   	jpeg_encode_enabled = 1;
-    //HAL_DCMI_Stop(&hdcmi);
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
   /* USER CODE END DMA2_Stream1_IRQn 1 */
 }
