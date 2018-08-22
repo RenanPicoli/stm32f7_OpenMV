@@ -203,7 +203,9 @@ void SysTick_Handler(void)
 void DMA2_Stream1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
-
+	if(DMA2->LISR & DMA_LISR_TCIF1){//testo se a transferência foi completada
+		jpeg_encode_enabled = 1;//habilito compressor jpeg
+	}
   /* USER CODE END DMA2_Stream1_IRQn 0 */
   HAL_DMA_IRQHandler(&dma);
   /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
@@ -216,8 +218,10 @@ void DMA2_Stream1_IRQHandler(void)
 			raw_image[i][j] = 0x60;
 		}
 	}*/
-  	jpeg_encode_enabled = 1;
-    //HAL_DCMI_Stop(&hdcmi);
+
+  	//HAL_DCMI_Stop(&hdcmi);
+  	hdcmi.DMA_Handle->Instance->CR &= ~(DMA_SxCR_EN);//STALLS DMA
+  	//HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
   /* USER CODE END DMA2_Stream1_IRQn 1 */
 }

@@ -211,7 +211,8 @@ int main(void)
 
 	  if (jpeg_encode_enabled == 1)
 		{
-		  HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
+		  //HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
+
 		  jpeg_encode_enabled = 0;
 		  jpeg_encode_done = 0;
 
@@ -226,7 +227,9 @@ int main(void)
 */
 
 		  jpeg_encode_done = 1;//encoding ended
-		  HAL_DCMI_Resume(&hdcmi);
+		  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+		  hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
+		  //HAL_DCMI_Resume(&hdcmi);
 		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
 		}
 
