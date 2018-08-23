@@ -205,6 +205,7 @@ void DMA2_Stream1_IRQHandler(void)
   /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
 	if(DMA2->LISR & DMA_LISR_TCIF1){//testo se a transferência foi completada
 		jpeg_encode_enabled = 1;//habilito compressor jpeg
+		HAL_DCMI_Stop(&hdcmi);
 	}
   /* USER CODE END DMA2_Stream1_IRQn 0 */
   HAL_DMA_IRQHandler(&dma);
@@ -220,7 +221,7 @@ void DMA2_Stream1_IRQHandler(void)
 	}*/
 
   	//HAL_DCMI_Stop(&hdcmi);
-  	hdcmi.DMA_Handle->Instance->CR &= ~(DMA_SxCR_EN);//STALLS DMA
+  	//hdcmi.DMA_Handle->Instance->CR &= ~(DMA_SxCR_EN);//STALLS DMA
   	//HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
   /* USER CODE END DMA2_Stream1_IRQn 1 */
@@ -232,7 +233,9 @@ void DMA2_Stream1_IRQHandler(void)
 void DCMI_IRQHandler(void)
 {
   /* USER CODE BEGIN DCMI_IRQn 0 */
-
+  if(DCMI->MISR & DCMI_MIS_VSYNC_MIS){//testa para IRQ de ínicio de frame
+	  jpeg_encode_enabled = 0;//desabilito compressor pois agora vou preencher o buffer
+  }
   /* USER CODE END DCMI_IRQn 0 */
   HAL_DCMI_IRQHandler(&hdcmi);
   /* USER CODE BEGIN DCMI_IRQn 1 */

@@ -192,7 +192,7 @@ int main(void)
   MX_DCMI_Init();
 
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
-  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
   /* USER CODE END 2 */
 
@@ -207,7 +207,6 @@ int main(void)
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(status!=HAL_OK)));//red green ON if something is NOT OK
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
-
 
 	  if (jpeg_encode_enabled == 1)
 		{
@@ -227,8 +226,9 @@ int main(void)
 */
 
 		  jpeg_encode_done = 1;//encoding ended
-		  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
-		  hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
+		  HAL_Delay(100);
+		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+		  //hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
 		  //HAL_DCMI_Resume(&hdcmi);
 		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
 		}
