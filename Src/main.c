@@ -64,9 +64,10 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern const uint8_t default_regs[][2];
 
 extern unsigned char inBMP2[];
+
 uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
-//uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
-uint8_t* raw_image __attribute__ ((aligned (64)));//[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
+uint8_t* raw_image;//[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
+uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
 HAL_StatusTypeDef status;
 
 uint16_t last_jpeg_frame_size = 0;

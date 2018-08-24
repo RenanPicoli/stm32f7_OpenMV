@@ -41,7 +41,8 @@
 #include "params.h"
 
 /* USER CODE BEGIN 0 */
-extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+//extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+extern uint8_t* raw_image;
 extern const unsigned char inBMP2[];
 DMA_HandleTypeDef dma;
 extern HAL_StatusTypeDef status;

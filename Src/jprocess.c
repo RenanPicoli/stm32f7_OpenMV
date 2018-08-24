@@ -23,8 +23,8 @@ uint8_t *write_pointer = (uint8_t*)outbytes0;
 uint8_t *read_pointer =  (uint8_t*)outbytes1;
 
 //extern void* raw_image;
-//extern uint8_t* raw_image;
-extern uint8_t raw_image [IMG_HEIGHT][IMG_WIDTH];
+extern uint8_t* raw_image;
+//extern uint8_t raw_image [IMG_HEIGHT][IMG_WIDTH];
 //extern uint8_t raw_image [][IMG_WIDTH];
 //extern uint32_t raw_image;
 
@@ -739,7 +739,7 @@ unsigned int jprocess(void)
       //pointer - upper left pixel
       //process_quadro_block process 4 blocks (2 horizontal and 2 vertical)
       //process_quadro_block((UINT8*)(inBMP2+0x436 + xcount*DCTSIZE + ycount*IMG_WIDTH));//Data source for encoder - BMP image in FLASH
-      process_quadro_block((UINT8*)((uint8_t*)&raw_image + xcount*DCTSIZE + ycount*IMG_WIDTH));//Data source for encoder - RAM array "raw_image"
+      process_quadro_block((UINT8*)((uint8_t*)raw_image + xcount*DCTSIZE + ycount*IMG_WIDTH));//Data source for encoder - RAM array "raw_image"
       
       //Next blocks by X
       xcount = xcount+2;

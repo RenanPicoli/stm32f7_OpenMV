@@ -38,7 +38,7 @@
 /* USER CODE BEGIN 0 */
 #include "params.h"
 
-//extern uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH];
+//extern uint8_t* raw_image;
 extern uint8_t jpeg_encode_enabled;
 /* USER CODE END 0 */
 
