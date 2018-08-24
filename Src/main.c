@@ -64,7 +64,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern const uint8_t default_regs[][2];
 
 extern unsigned char inBMP2[];
-uint8_t raw_image[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
+uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
+//uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
+uint8_t* raw_image __attribute__ ((aligned (64)));//[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
 HAL_StatusTypeDef status;
 
 uint16_t last_jpeg_frame_size = 0;
@@ -84,7 +86,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 void OTG_FS_IRQHandler(void);
-void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
+//void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
 void sensor_config();
 int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data);
 void TimingDelay_Decrement(void);
@@ -191,6 +193,9 @@ int main(void)
   MX_DMA_Init();
   MX_DCMI_Init();
 
+  raw_image = (uint8_t*)raw_image0;
+  //raw_image = (uint32_t)&(raw_image0[0]);
+  //raw_image = (uint32_t)&(raw_image0[0][0]);
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
   HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
@@ -226,7 +231,7 @@ int main(void)
 */
 
 		  jpeg_encode_done = 1;//encoding ended
-		  HAL_Delay(15);
+		  HAL_Delay(30);
 		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 		  //hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
 		  //HAL_DCMI_Resume(&hdcmi);
@@ -330,7 +335,7 @@ void OTG_FS_IRQHandler(void)
   /* USER CODE END OTG_FS_IRQn 1 */
 }
 
-void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
+/* void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
 {
   int x = radius;
   int y = 0;
@@ -363,7 +368,7 @@ void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
       xChange += 2;
     }
   }
-}
+}*/
 
 void sensor_config()
 {
