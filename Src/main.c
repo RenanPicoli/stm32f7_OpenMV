@@ -65,9 +65,11 @@ extern const uint8_t default_regs[][2];
 
 extern unsigned char inBMP2[];
 
-uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
-uint8_t* raw_image;//[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
-uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
+uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
+uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
+uint8_t* raw_image;//intended for jpeg compression
+uint8_t* dma_buffer;//intended for DMA xfers
+
 HAL_StatusTypeDef status;
 
 uint16_t last_jpeg_frame_size = 0;
@@ -90,6 +92,7 @@ void OTG_FS_IRQHandler(void);
 //void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
 void sensor_config();
 int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data);
+void switch_dma_jpeg_buffers(void);
 void TimingDelay_Decrement(void);
 void Delay(__IO uint32_t nTime);
 void Fail_Handler(void);
@@ -194,11 +197,13 @@ int main(void)
   MX_DMA_Init();
   MX_DCMI_Init();
 
+  jpeg_encode_done = 1;
   raw_image = (uint8_t*)raw_image0;
+  dma_buffer= (uint8_t*)raw_image1;
   //raw_image = (uint32_t)&(raw_image0[0]);
   //raw_image = (uint32_t)&(raw_image0[0][0]);
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
-  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
   /* USER CODE END 2 */
 
@@ -214,12 +219,19 @@ int main(void)
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(status!=HAL_OK)));//red green ON if something is NOT OK
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
 
+	  if((hdcmi.DMA_Handle->State == HAL_DMA_STATE_READY) && (jpeg_encode_done==1)){//DMA ocioso e compressão terminada
+		  jpeg_encode_done = 0;
+		  switch_dma_jpeg_buffers();
+		  jpeg_encode_enabled = 1;
+		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+	  }
+
 	  if (jpeg_encode_enabled == 1)
 		{
 		  //HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
 
 		  jpeg_encode_enabled = 0;
-		  jpeg_encode_done = 0;
+		  //jpeg_encode_done = 0;
 
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
 
@@ -233,7 +245,7 @@ int main(void)
 
 		  jpeg_encode_done = 1;//encoding ended
 		  HAL_Delay(30);
-		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+		  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 		  //hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
 		  //HAL_DCMI_Resume(&hdcmi);
 		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
@@ -404,6 +416,17 @@ int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data)
     }
     __enable_irq();
     return ret;
+}
+
+void switch_dma_jpeg_buffers(void){
+	if(raw_image == (uint8_t*)raw_image0){
+		raw_image = (uint8_t*)raw_image1;
+		dma_buffer = (uint8_t*)raw_image0;
+	}else{
+		raw_image = (uint8_t*)raw_image0;
+		dma_buffer = (uint8_t*)raw_image1;
+	}
+	return;
 }
 
 void delay_ms(uint32_t ms)

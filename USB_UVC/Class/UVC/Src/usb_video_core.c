@@ -421,7 +421,6 @@ static uint8_t  usbd_video_EP0_RxReady (USBD_HandleTypeDef  *pdev)
 //send data to PC
 static uint8_t  usbd_video_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
-//  ITM_SendChar('V');
   static uint16_t packets_cnt = 0xffff;
   static uint8_t header[2] = {2,0};//length + data
   uint16_t i;
