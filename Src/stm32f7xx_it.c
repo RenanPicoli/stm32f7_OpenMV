@@ -38,9 +38,7 @@
 /* USER CODE BEGIN 0 */
 #include "params.h"
 
-extern uint8_t* raw_image;
-extern uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH];
-extern uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH];
+//extern uint8_t* raw_image;
 extern uint8_t jpeg_encode_enabled;
 /* USER CODE END 0 */
 
@@ -205,26 +203,17 @@ void SysTick_Handler(void)
 void DMA2_Stream1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
-  //para evitar que novos frames recebidos atrapalhem a compressão
-  //raw _image será usada em jprocess, não pode ser o vetor usado pelo DMA
-  if(hdcmi.DMA_Handle->Instance->CR & DMA_SxCR_CT){
-	  raw_image = (uint8_t*)raw_image0;
-  }else{
-	  raw_image = (uint8_t*)raw_image1;
-  }
+	if(DMA2->LISR & DMA_LISR_TCIF1){//testo se a transferência foi completada
+		//jpeg_encode_enabled = 1;//habilito compressor jpeg
+		HAL_DCMI_Stop(&hdcmi);
+	}
   /* USER CODE END DMA2_Stream1_IRQn 0 */
   HAL_DMA_IRQHandler(&dma);
   /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
-	/*for(int i=0; i<IMG_HEIGHT; i++){//linha
-		for(int j=0; j<IMG_WIDTH; j++){//coluna
-			//raw_image[i][j] >>= 4;//drops chroma components
-			//raw_image[i][j] *= 16;
-			//raw_image[i][j] &= 0xF0;
-			//raw_image[i][j] &= 0x0F;
-			raw_image[i][j] = 0x60;
-		}
-	}*/
-  	jpeg_encode_enabled = 1;
+
+  	//HAL_DCMI_Stop(&hdcmi);
+  	//hdcmi.DMA_Handle->Instance->CR &= ~(DMA_SxCR_EN);//STALLS DMA
+  	//HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);//led azul ON para DEBUG
   /* USER CODE END DMA2_Stream1_IRQn 1 */
 }
@@ -235,7 +224,9 @@ void DMA2_Stream1_IRQHandler(void)
 void DCMI_IRQHandler(void)
 {
   /* USER CODE BEGIN DCMI_IRQn 0 */
-
+//  if(DCMI->MISR & DCMI_MIS_VSYNC_MIS){//testa para IRQ de ínicio de frame
+//	  jpeg_encode_enabled = 0;//desabilito compressor pois agora vou preencher o buffer
+//	}
   /* USER CODE END DCMI_IRQn 0 */
   HAL_DCMI_IRQHandler(&hdcmi);
   /* USER CODE BEGIN DCMI_IRQn 1 */

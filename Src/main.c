@@ -74,9 +74,10 @@ extern const uint8_t default_regs[][2];
 extern unsigned char inBMP2[];
 
 //double buffer for DMA destination/JPEG source
-uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
-uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64))) ;
-uint8_t* raw_image;
+uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
+uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
+uint8_t* raw_image;//intended for jpeg compression
+uint8_t* dma_buffer;//intended for DMA xfers
 
 HAL_StatusTypeDef status;
 
@@ -97,12 +98,10 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 void OTG_FS_IRQHandler(void);
-extern void DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma);
-extern void DCMI_DMAError(DMA_HandleTypeDef *hdma);
-HAL_StatusTypeDef DCMI_Start_DMA_DoubleBuffer(DCMI_HandleTypeDef* hdcmi, uint32_t DCMI_Mode, uint32_t DstAddress, uint32_t SecondMemAddress, uint32_t Length);
 //void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
 void sensor_config();
 int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data);
+void switch_dma_jpeg_buffers(void);
 void TimingDelay_Decrement(void);
 void Delay(__IO uint32_t nTime);
 void Fail_Handler(void);
@@ -207,12 +206,13 @@ int main(void)
   MX_DMA_Init();
   MX_DCMI_Init();
 
+  jpeg_encode_done = 1;
+  raw_image = (uint8_t*)raw_image0;
+  dma_buffer= (uint8_t*)raw_image1;
+  //raw_image = (uint32_t)&(raw_image0[0]);
+  //raw_image = (uint32_t)&(raw_image0[0][0]);
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
-
-  hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_DBM;//habilita o modo double buffer
-  //hdcmi.DMA_Handle->Instance->M1AR = (uint32_t)raw_image1;//a linha abaixo inicializa MA0 mas não inicializa MA1
-  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image0, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
-  DCMI_Start_DMA_DoubleBuffer(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)raw_image0,(uint32_t)raw_image1, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
   /* USER CODE END 2 */
 
@@ -226,12 +226,21 @@ int main(void)
 	  i++;
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(status!=HAL_OK)));//red green ON if something is NOT OK
+	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
+
+	  if((hdcmi.DMA_Handle->State == HAL_DMA_STATE_READY) && (jpeg_encode_done==1)){//DMA ocioso e compressão terminada
+		  jpeg_encode_done = 0;
+		  switch_dma_jpeg_buffers();
+		  jpeg_encode_enabled = 1;
+		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+	  }
 
 	  if (jpeg_encode_enabled == 1)
 		{
-		  //HAL_DCMI_Suspend(&hdcmi);
+		  //HAL_DCMI_Suspend(&hdcmi);//para evitar que novos frames recebidos atrapalhem a compressão
+
 		  jpeg_encode_enabled = 0;
-		  jpeg_encode_done = 0;
+		  //jpeg_encode_done = 0;
 
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
 
@@ -244,6 +253,9 @@ int main(void)
 */
 
 		  jpeg_encode_done = 1;//encoding ended
+		  HAL_Delay(1);//pôr menos do que isso sobrecarrega o OTG FS (max 1,5MB/s)
+		  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+		  //hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
 		  //HAL_DCMI_Resume(&hdcmi);
 		  //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_2);//Toggles blue led
 		}
@@ -345,158 +357,7 @@ void OTG_FS_IRQHandler(void)
   /* USER CODE END OTG_FS_IRQn 1 */
 }
 
-/**
-  * @brief  Enables DCMI DMA request and enables DCMI capture
-  * @param  hdcmi     		pointer to a DCMI_HandleTypeDef structure that contains
-  *                    		the configuration information for DCMI.
-  * @param  DCMI_Mode 		DCMI capture mode snapshot or continuous grab.
-  * @param  DstAddress     	The destination memory Buffer address (LCD Frame buffer).
-  * @param SecondMemAddress	The second destination memory Buffer address (LCD Frame buffer).
-  * @param  Length    		The length of capture to be transferred.
-  * @retval HAL status
-  */
-HAL_StatusTypeDef DCMI_Start_DMA_DoubleBuffer(DCMI_HandleTypeDef* hdcmi, uint32_t DCMI_Mode, uint32_t DstAddress, uint32_t SecondMemAddress, uint32_t Length)
-{
-  /* Check function parameters */
-  assert_param(IS_DCMI_CAPTURE_MODE(DCMI_Mode));
-
-  /* Process Locked */
-  __HAL_LOCK(hdcmi);
-
-  /* Lock the DCMI peripheral state */
-  hdcmi->State = HAL_DCMI_STATE_BUSY;
-
-  /* Enable DCMI by setting DCMIEN bit */
-  __HAL_DCMI_ENABLE(hdcmi);
-
-  /* Configure the DCMI Mode */
-  hdcmi->Instance->CR &= ~(DCMI_CR_CM);
-  hdcmi->Instance->CR |=  (uint32_t)(DCMI_Mode);
-
-  /* Set the DMA memory0 conversion complete callback */
-  hdcmi->DMA_Handle->XferCpltCallback = DCMI_DMAXferCplt;
-
-  /* Set the DMA error callback */
-  hdcmi->DMA_Handle->XferErrorCallback = DCMI_DMAError;
-
-  /* Set the dma abort callback */
-  hdcmi->DMA_Handle->XferAbortCallback = NULL;
-
-  /* Reset transfer counters value */
-  hdcmi->XferCount = 0;
-  hdcmi->XferTransferNumber = 0;
-
-  if(Length <= 0xFFFF)
-  {
-    /* Enable the DMA Stream */
-    //HAL_DMA_Start_IT()
-    /* calculate DMA base and stream number */
-    DMA_Base_Registers *regs = (DMA_Base_Registers *)hdcmi->DMA_Handle->StreamBaseAddress;
-
-    /* Check the parameters */
-    assert_param(IS_DMA_BUFFER_SIZE(Length));
-
-    /* Process locked */
-    __HAL_LOCK(hdcmi->DMA_Handle);
-
-    if(HAL_DMA_STATE_READY == hdcmi->DMA_Handle->State)
-    {
-      /* Change DMA peripheral state */
-      hdcmi->DMA_Handle->State = HAL_DMA_STATE_BUSY;
-
-      /* Initialize the error code */
-      hdcmi->DMA_Handle->ErrorCode = HAL_DMA_ERROR_NONE;
-
-      /* Configure the source, destination addresses and the data length */
-      /* Configure DMA Stream data length */
-      hdcmi->DMA_Handle->Instance->NDTR = Length;
-
-      /* Configure DMA Stream source address */
-      hdcmi->DMA_Handle->Instance->PAR = (uint32_t)&hdcmi->Instance->DR;
-
-      /* Configure DMA Stream destination address */
-      hdcmi->DMA_Handle->Instance->M0AR = DstAddress;
-
-      /* Configure DMA Stream SECOND destination address */
-      hdcmi->DMA_Handle->Instance->M1AR = SecondMemAddress;
-
-      /* Clear all interrupt flags at correct offset within the register */
-      regs->IFCR = 0x3FU << hdcmi->DMA_Handle->StreamIndex;
-
-      /* Enable Common interrupts*/
-      hdcmi->DMA_Handle->Instance->CR  |= DMA_IT_TC | DMA_IT_TE | DMA_IT_DME;
-      hdcmi->DMA_Handle->Instance->FCR |= DMA_IT_FE;
-
-      if(hdcmi->DMA_Handle->XferHalfCpltCallback != NULL)
-      {
-    	  hdcmi->DMA_Handle->Instance->CR  |= DMA_IT_HT;
-      }
-
-      /* Enable the Peripheral */
-      __HAL_DMA_ENABLE(hdcmi->DMA_Handle);
-    }
-    else
-    {
-      /* Process unlocked */
-      __HAL_UNLOCK(hdcmi->DMA_Handle);
-
-      /* Return error status */
-      status = HAL_BUSY;
-    }
-
-  }
-  else /* DCMI_DOUBLE_BUFFER Mode */
-  {//TODO
-	  status = HAL_ERROR;
-/*     Set the DMA memory1 conversion complete callback
-    hdcmi->DMA_Handle->XferM1CpltCallback = DCMI_DMAXferCplt;
-
-     Initialize transfer parameters
-    hdcmi->XferCount = 1;
-    hdcmi->XferSize = Length;
-    hdcmi->pBuffPtr = pData;
-
-     Get the number of buffer
-    while(hdcmi->XferSize > 0xFFFF)
-    {
-      hdcmi->XferSize = (hdcmi->XferSize/2);
-      hdcmi->XferCount = hdcmi->XferCount*2;
-    }
-
-     Update DCMI counter  and transfer number
-    hdcmi->XferCount = (hdcmi->XferCount - 2);
-    hdcmi->XferTransferNumber = hdcmi->XferCount;
-
-     Update second memory address
-    SecondMemAddress = (uint32_t)(pData + (4*hdcmi->XferSize));
-
-     Start DMA multi buffer transfer
-    HAL_DMAEx_MultiBufferStart_IT(hdcmi->DMA_Handle, (uint32_t)&hdcmi->Instance->DR, (uint32_t)pData, SecondMemAddress, hdcmi->XferSize);*/
-  }
-
-  /* Enable Capture */
-  hdcmi->Instance->CR |= DCMI_CR_CAPTURE;
-
-  /* Release Lock */
-  __HAL_UNLOCK(hdcmi);
-
-  /* Return function status */
-  return HAL_OK;
-}
-
-/**
-  * @brief  Enables DCMI DMA request and enables DCMI capture
-  * @param  hdcmi      pointer to a DCMI_HandleTypeDef structure that contains
-  *                     the configuration information for DCMI.
-  * @param  DCMI_Mode  DCMI capture mode snapshot or continuous grab.
-  * @param  DstAddress The memory0 Buffer address (destination buffer).
-  * @param  SecondMemAddress The memory1 Buffer address (also destination buffer).
-  * @param  Length     The length of capture to be transferred.
-  * @retval HAL status
-  */
-
-/*
-void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
+/* void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
 {
   int x = radius;
   int y = 0;
@@ -564,6 +425,17 @@ int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data)
     }
     __enable_irq();
     return ret;
+}
+
+void switch_dma_jpeg_buffers(void){
+	if(raw_image == (uint8_t*)raw_image0){
+		raw_image = (uint8_t*)raw_image1;
+		dma_buffer = (uint8_t*)raw_image0;
+	}else{
+		raw_image = (uint8_t*)raw_image0;
+		dma_buffer = (uint8_t*)raw_image1;
+	}
+	return;
 }
 
 void delay_ms(uint32_t ms)
