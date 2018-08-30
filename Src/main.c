@@ -244,7 +244,7 @@ int main(void)
 */
 
 		  jpeg_encode_done = 1;//encoding ended
-		  HAL_Delay(30);
+		  HAL_Delay(1);//pôr menos do que isso sobrecarrega o OTG FS (max 1,5MB/s)
 		  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 		  //hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
 		  //HAL_DCMI_Resume(&hdcmi);
