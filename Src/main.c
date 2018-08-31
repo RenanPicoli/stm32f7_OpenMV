@@ -206,6 +206,14 @@ int main(void)
   MX_DMA_Init();
   MX_DCMI_Init();
 
+  __HAL_RCC_TIM6_CLK_ENABLE();
+  TIM_HandleTypeDef htim;
+  htim.Instance	= TIM6;
+  htim.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim.Init.Prescaler = 54;//TIM6CLK=2xAPB1CLK=54MHz, cada tick é 1us
+  //htim.Init.
+  HAL_TIM_Base_Init(&htim);
+
   jpeg_encode_done = 1;
   raw_image = (uint8_t*)raw_image0;
   dma_buffer= (uint8_t*)raw_image1;
