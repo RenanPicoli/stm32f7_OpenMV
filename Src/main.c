@@ -211,8 +211,10 @@ int main(void)
   htim.Instance	= TIM6;
   htim.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim.Init.Prescaler = 54;//TIM6CLK=2xAPB1CLK=54MHz, cada tick é 1us
-  //htim.Init.
-  HAL_TIM_Base_Init(&htim);
+  //htim.Init.ClockDivision = ;
+  htim.Init.Period = 0xFFFF;//conta até 65535 e dá o reload
+  htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  HAL_TIM_Base_Init(&htim);//configura o timer
 
   jpeg_encode_done = 1;
   raw_image = (uint8_t*)raw_image0;
@@ -250,8 +252,10 @@ int main(void)
 		  jpeg_encode_enabled = 0;
 		  //jpeg_encode_done = 0;
 
+		  HAL_TIM_Base_Start(&htim);
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
-
+		  uint32_t microsegundos = htim.Instance->CNT;
+		  HAL_TIM_Base_Stop(&htim);
 /*
 		  circle_x = 160 + sin(angle)*60;
 		  circle_y = 120 + cos(angle)*60;
