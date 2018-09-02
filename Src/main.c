@@ -80,6 +80,8 @@ uint8_t* raw_image;//intended for jpeg compression
 uint8_t* dma_buffer;//intended for DMA xfers
 
 HAL_StatusTypeDef status;
+#define NSAMPLES 20
+uint32_t samples[NSAMPLES];
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
@@ -224,6 +226,7 @@ int main(void)
   //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
   HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
+  //uint8_t index = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -233,7 +236,7 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	  i++;
+	  //i++;
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(status!=HAL_OK)));//red green ON if something is NOT OK
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
@@ -253,9 +256,14 @@ int main(void)
 		  //jpeg_encode_done = 0;
 
 		  HAL_TIM_Base_Start(&htim);
-		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
 		  uint32_t microsegundos = htim.Instance->CNT;
+		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
+		  microsegundos = htim.Instance->CNT - microsegundos;
 		  HAL_TIM_Base_Stop(&htim);
+
+		  samples[i%NSAMPLES] = microsegundos;
+		  i++;
+
 /*
 		  circle_x = 160 + sin(angle)*60;
 		  circle_y = 120 + cos(angle)*60;
