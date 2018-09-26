@@ -1,4 +1,4 @@
-/* Baixado de https://wikicoding.org/wiki/c/k-means_clustering_algorithm/ */
+/* Adaptado de https://wikicoding.org/wiki/c/k-means_clustering_algorithm/ */
 
 /*****
  ** kmeans.c
@@ -54,86 +54,105 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <float.h>
-#include <math.h>
+//#include <math.h> //era para usar pow
 
-    int * k_means(double * * data, int n, int m, int k, double t, double * * centroids) {
-        /* output cluster label for each data point */
-        int * labels = (int * ) calloc(n, sizeof(int));
+//macro para substituir fabs de math.h
+#define fabs(x) x>0?x:(-x)
 
-        int h, i, j; /* loop counters, of course :) */
-        int * counts = (int * ) calloc(k, sizeof(int)); /* size of each cluster */
-        double old_error, error = DBL_MAX; /* sum of squared euclidean distance */
-        double * * c = centroids ? centroids : (double * * ) calloc(k, sizeof(double * ));
-        double * * c1 = (double * * ) calloc(k, sizeof(double * )); /* temp centroids */
+#define K_MEANS_OK 		0
+#define K_MEANS_ERROR 	1
 
-        assert(data && k > 0 && k <= n && m > 0 && t >= 0); /* for debugging */
+#include <stdio.h>//incluí printf para debug
 
-        /****
-         ** initialization */
+int k_means(int * * data, int n, int m, int k, float t, float * * centroids) {
+    /* output cluster label for each data point */
+    int * labels = (int * ) calloc(n, sizeof(int));
+	if(labels==NULL) return K_MEANS_ERROR;
 
-        for (h = i = 0; i < k; h += n / k, i++) {
-            c1[i] = (double * ) calloc(m, sizeof(double));
-            if (!centroids) {
-                c[i] = (double * ) calloc(m, sizeof(double));
-            }
-            /* pick k points as initial centroids */
-            for (j = m; j-- > 0; c[i][j] = data[h][j]);
-        }
+    int h, i, j; /* loop counters, of course :) */
+    int * counts = (int * ) calloc(k, sizeof(int)); /* size of each cluster */
+    float old_error, error = DBL_MAX; /* sum of squared euclidean distance */
+    float * * c = centroids ? centroids : (float * * ) calloc(k, sizeof(float * ));
+    float * * c1 = (float * * ) calloc(k, sizeof(float * )); /* temp centroids */
+	if((counts==NULL)||(c==NULL)||(c1==NULL)) return K_MEANS_ERROR;
 
-        /****
-         ** main loop */
+    assert(data && k > 0 && k <= n && m > 0 && t >= 0); /* for debugging */
 
-        do {
-            /* save error from last step */
-            old_error = error, error = 0;
+    /****
+     ** initialization */
 
-            /* clear old counts and temp centroids */
-            for (i = 0; i < k; counts[i++] = 0) {
-                for (j = 0; j < m; c1[i][j++] = 0);
-            }
-
-            for (h = 0; h < n; h++) {
-                /* identify the closest cluster */
-                double min_distance = DBL_MAX;
-                for (i = 0; i < k; i++) {
-                    double distance = 0;
-                    for (j = m; j-- > 0; distance += pow(data[h][j] - c[i][j], 2));
-                    if (distance < min_distance) {
-                        labels[h] = i;
-                        min_distance = distance;
-                    }
-                }
-                /* update size and temp centroid of the destination cluster */
-                for (j = m; j-- > 0; c1[labels[h]][j] += data[h][j]);
-                counts[labels[h]]++;
-                /* update standard error */
-                error += min_distance;
-            }
-
-            for (i = 0; i < k; i++) { /* update all centroids */
-                for (j = 0; j < m; j++) {
-                    c[i][j] = counts[i] ? c1[i][j] / counts[i] : c1[i][j];
-                }
-            }
-
-        } while (fabs(error - old_error) > t);
-
-        /****
-         ** housekeeping */
-
-        for (i = 0; i < k; i++) {
-            if (!centroids) {
-                free(c[i]);
-            }
-            free(c1[i]);
-        }
-
+    for (h = i = 0; i < k; h += n / k, i++) {
+        c1[i] = (float * ) calloc(m, sizeof(float));
+		if(c1[i]==NULL) return K_MEANS_ERROR;
         if (!centroids) {
-            free(c);
+            c[i] = (float * ) calloc(m, sizeof(float));
+			if(c[i]==NULL) return K_MEANS_ERROR;
         }
-        free(c1);
-
-        free(counts);
-
-        return labels;
+        /* pick k points as initial centroids */
+        for (j = m; j-- > 0; c[i][j] = (float)data[h][j]);
     }
+
+    /****
+     ** main loop */
+
+	int iterations = 0;
+    do {
+        /* save error from last step */
+        old_error = error, error = 0;
+
+        /* clear old counts and temp centroids */
+        for (i = 0; i < k; counts[i++] = 0) {
+            for (j = 0; j < m; c1[i][j++] = 0);
+        }
+
+        for (h = 0; h < n; h++) {/* para cada ponto sendo classificado ...*/
+            /* identify the closest cluster */
+            float min_distance = DBL_MAX;
+            for (i = 0; i < k; i++) {/* para cada centroide */
+                float distance = 0;
+                //for (j = m; j-- > 0; distance += pow(data[h][j] - c[i][j], 2));/* para cada dimensão */
+				for (j = m; j-- > 0; distance += fabs((float)data[h][j] - c[i][j]));/* igual à linha comentada, mas norma L1 */
+                if (distance < min_distance) {
+                    labels[h] = i;
+                    min_distance = distance;
+                }
+            }
+            /* update size and temp centroid of the destination cluster */
+            for (j = m; j-- > 0; c1[labels[h]][j] += data[h][j]);
+            counts[labels[h]]++;
+            /* update standard error */
+            error += min_distance;
+        }
+
+        for (i = 0; i < k; i++) { /* update all centroids */
+            for (j = 0; j < m; j++) {
+                c[i][j] = counts[i] ? c1[i][j] / counts[i] : c1[i][j];
+            }
+        }
+
+		iterations++;
+    } while (fabs(error - old_error) > t);
+
+	printf("Iterations=%d\n",iterations);
+
+    /****
+     ** housekeeping */
+
+    for (i = 0; i < k; i++) {
+        if (!centroids) {
+            free(c[i]);
+        }
+        free(c1[i]);
+    }
+
+    if (!centroids) {
+        free(c);
+    }
+    free(c1);
+
+    free(counts);
+
+	free(labels);
+    //return labels;
+	return K_MEANS_OK;
+}
