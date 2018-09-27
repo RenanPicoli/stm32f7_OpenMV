@@ -209,9 +209,6 @@ int main(void)
   jpeg_encode_done = 1;
   raw_image = (uint8_t*)raw_image0;
   dma_buffer= (uint8_t*)raw_image1;
-  //raw_image = (uint32_t)&(raw_image0[0]);
-  //raw_image = (uint32_t)&(raw_image0[0][0]);
-  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
   HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
   /* USER CODE END 2 */

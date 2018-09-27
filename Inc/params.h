@@ -9,8 +9,8 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
-#define IMG_WIDTH (320)
-#define IMG_HEIGHT (240)
+#define IMG_WIDTH (160)
+#define IMG_HEIGHT (120)
 
 typedef int DCTELEM;
 

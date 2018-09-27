@@ -16,8 +16,9 @@
 //uint8_t outbytes1[20000] __attribute__ ((section(".ccm")));
 
 //Buffer for encoded JPEG image
-uint8_t outbytes0[32000] __attribute__ ((section (".dtcmram")));
-uint8_t outbytes1[32000] __attribute__ ((section (".dtcmram")));
+//cada buffer tinha 32000 bytes, diminuí para economizar memória
+uint8_t outbytes0[20000] __attribute__ ((section (".dtcmram")));
+uint8_t outbytes1[20000] __attribute__ ((section (".dtcmram")));
 
 uint8_t *write_pointer = (uint8_t*)outbytes0;
 uint8_t *read_pointer =  (uint8_t*)outbytes1;
