@@ -22,19 +22,19 @@ const uint8_t default_regs[][2] = {
 		//15fps at 24MHz input clock, 4x maximum gain
 		//2/27/2007
 		{COM3, 0x10},//@pícoli
-		{COM7, COM7_RES_VGA|COM7_FMT_YUV},//@pícoli
+		{COM7, COM7_RES_QVGA|COM7_FMT_YUV},//@pícoli
 		{COM12, 0x03},
-		{HSTART, 0x23},
-		{HSIZE, 0xA0},
-		{VSTART, 0x07},
-		{VSIZE, 0xF0},
+		{HSTART, 0x49},
+		{HSIZE, 0x28},
+		{VSTART, 0x03},
+		{VSIZE, 0x3c},
 		{HREF, 0x00},
 		{HOUTSIZE, 0x28},//muda para QQVGA
 		{VOUTSIZE, 0x3c},//muda para QQVGA
 		{EXHCH, 0x00},
 
-		// Enable auto-scaling/zooming factors
-		{DSPAUTO,0xFF},//@pícoli, conforme projeto openmv, ov725.set_framesize
+		// Disable auto-scaling/zooming factors
+		{DSPAUTO,0xF3},//@pícoli, conforme projeto openmv, ov725.set_framesize
 		{ADVFL, 0x00},//@pícoli
 		{ADVFH, 0x00},//@pícoli
 		{CLKRC, 0x00},//@pícoli
@@ -42,8 +42,10 @@ const uint8_t default_regs[][2] = {
 		{0x4d, 0x09},
 		{0x63, 0xe0},
 		{0x64, 0xff},
-		//{DSP_CTRL2, DSP_CTRL2_VDCW_EN|DSP_CTRL2_HDCW_EN|DSP_CTRL2_HZOOM_EN|DSP_CTRL2_VZOOM_EN},//habilita downsampling a partir de VGA
+		//{DSP_CTRL2, DSP_CTRL2_VZOOM_EN|DSP_CTRL2_HZOOM_EN},//habilita downsampling a partir de VGA
 		//{SCAL0, 0x05},//@Pícoli: 1/2 downsampling vertical e horizontal
+		//{SCAL1,0x10},
+		//{SCAL2,0x10},
 		{0x66, 0x00},
 		{DSP_CTRL4, DSP_CTRL4_YUV_RGB},//{0x67, 0x48},
 		{0x13, 0xf0},
