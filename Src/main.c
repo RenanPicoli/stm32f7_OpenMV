@@ -74,8 +74,8 @@ extern const uint8_t default_regs[][2];
 extern unsigned char inBMP2[];
 
 //double buffer for DMA destination/JPEG source
-uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
-uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
+uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64),section(".dtcmram")));
+uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64),section(".dtcmram")));
 uint8_t* raw_image;//intended for jpeg compression
 uint8_t* dma_buffer;//intended for DMA xfers
 
