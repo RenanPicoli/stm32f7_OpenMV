@@ -9,6 +9,7 @@
 #include "usbd_desc.h"
 
 #include "usb_core.h"//@Pícoli: para USBD_Class_cb_TypeDef (do iliasam)
+#include "params.h"//@Pícoli: para suportar outras resoluções (estava hardcoded 320x240)
 
 #define u8 uint8_t
 //UVC 1.0 uses only 26 first bytes
@@ -35,8 +36,8 @@ typedef struct  _VideoControl{
 #define DBVAL(x) (x & 0xFF),((x >> 8) & 0xFF),((x >> 16) & 0xFF),((x >> 24) & 0xFF)
 
 
-#define WIDTH                                         (unsigned int)320
-#define HEIGHT                                        (unsigned int)240
+#define WIDTH                                         (unsigned int)IMG_WIDTH
+#define HEIGHT                                        (unsigned int)IMG_HEIGHT
 #define CAM_FPS                                       40
 #define VIDEO_PACKET_SIZE                             (unsigned int)(768+2)//128+130
 #define MIN_BIT_RATE                                  (unsigned long)(WIDTH*HEIGHT*16*CAM_FPS)//16 bit

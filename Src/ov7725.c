@@ -22,12 +22,12 @@ const uint8_t default_regs[][2] = {
 		//15fps at 24MHz input clock, 4x maximum gain
 		//2/27/2007
 		{COM3, 0x10},//@pícoli
-		{COM7, COM7_RES_QVGA|COM7_FMT_YUV},//@pícoli
+		{COM7, COM7_RES_VGA|COM7_FMT_YUV},//@pícoli
 		{COM12, 0x03},
-		{HSTART, 0x3F},
-		{HSIZE, 0x50},
-		{VSTART, 0x03},
-		{VSIZE, 0x78},
+		{HSTART, 0x23},
+		{HSIZE, 0xA0},
+		{VSTART, 0x07},
+		{VSIZE, 0xF0},
 		{HREF, 0x00},
 		{HOUTSIZE, 0x28},//muda para QQVGA
 		{VOUTSIZE, 0x3c},//muda para QQVGA
