@@ -37,9 +37,11 @@
 
 /* USER CODE BEGIN 0 */
 #include "params.h"
+//#include <stdlib.h>
 
-//extern uint8_t* raw_image;
 extern uint8_t jpeg_encode_enabled;
+extern uint8_t* dma_buffer;//intended for DMA xfers
+extern uint8_t tmp[2*IMG_HEIGHT][2*IMG_WIDTH] __attribute__ ((aligned (64),section (".dtcmram")));//recebe a img de alta resolução (320x240)
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -206,6 +208,16 @@ void DMA2_Stream1_IRQHandler(void)
 	if(DMA2->LISR & DMA_LISR_TCIF1){//testo se a transferência foi completada
 		//jpeg_encode_enabled = 1;//habilito compressor jpeg
 		HAL_DCMI_Stop(&hdcmi);
+		//agora vou realocar o dma_buffer, reduzir de 320x240 para 160x120 (ambas Y-only)
+		/*uint8_t* tmp_buffer = (uint8_t*)malloc(IMG_WIDTH*IMG_HEIGHT);
+		for(int i=0;i<IMG_HEIGHT;i++)//i:linha da img menor
+			for(int j=0;j<IMG_WIDTH;j++)//j:coluna da img menor
+				tmp_buffer[IMG_WIDTH*i+j]=dma_buffer[2*IMG_WIDTH*2*i+2*j];
+		free(dma_buffer);
+		dma_buffer = tmp_buffer;//dma_buffer agora é a imagem na resolução diminuída */
+		for(int i=0;i<IMG_HEIGHT;i++)//i:linha da img menor
+			for(int j=0;j<IMG_WIDTH;j++)//j:coluna da img menor
+				dma_buffer[IMG_WIDTH*i+j]=tmp[2*i][2*j];
 	}
   /* USER CODE END DMA2_Stream1_IRQn 0 */
   HAL_DMA_IRQHandler(&dma);

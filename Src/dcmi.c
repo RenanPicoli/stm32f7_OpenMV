@@ -63,8 +63,8 @@ void MX_DCMI_Init(void)
   hdcmi.Init.CaptureRate = DCMI_CR_ALL_FRAME;
   hdcmi.Init.ExtendedDataMode = DCMI_EXTEND_DATA_8B;
   hdcmi.Init.JPEGMode = DCMI_JPEG_DISABLE;
-  hdcmi.Init.ByteSelectMode = DCMI_BSM_ALTERNATE_4;//para capturar só componente Y
-  hdcmi.Init.ByteSelectStart = DCMI_OEBS_ODD;//para capturar só componente Y
+  hdcmi.Init.ByteSelectMode = DCMI_BSM_ALTERNATE_4;//para capturar só componente Y e reduzir largura
+  hdcmi.Init.ByteSelectStart = DCMI_OEBS_ODD;//para capturar só componente Y e reduzir altura
   hdcmi.Init.LineSelectMode = DCMI_LSM_ALTERNATE_2;
   hdcmi.Init.LineSelectStart = DCMI_OELS_ODD;
   if (HAL_DCMI_Init(&hdcmi) != HAL_OK)

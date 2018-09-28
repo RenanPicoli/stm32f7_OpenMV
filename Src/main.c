@@ -76,6 +76,7 @@ extern unsigned char inBMP2[];
 //double buffer for DMA destination/JPEG source
 uint8_t raw_image0[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
 uint8_t raw_image1[IMG_HEIGHT][IMG_WIDTH] __attribute__ ((aligned (64)));
+uint8_t tmp[2*IMG_HEIGHT][2*IMG_WIDTH] __attribute__ ((aligned (64),section (".dtcmram")));//75K: recebe a img de alta resolução (320x240)
 uint8_t* raw_image;//intended for jpeg compression
 uint8_t* dma_buffer;//intended for DMA xfers
 
@@ -207,12 +208,9 @@ int main(void)
   MX_DCMI_Init();
 
   jpeg_encode_done = 1;
-  raw_image = (uint8_t*)raw_image0;
-  dma_buffer= (uint8_t*)raw_image1;
-  //raw_image = (uint32_t)&(raw_image0[0]);
-  //raw_image = (uint32_t)&(raw_image0[0][0]);
-  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)raw_image, 0x9600);//size=320*240*2/4
-  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+  raw_image = (uint8_t*)raw_image0;//(uint8_t*)malloc(IMG_HEIGHT*IMG_WIDTH);//18.75K para ser usado na compressão da imagem Y-only 160x120
+  dma_buffer= (uint8_t*)raw_image1;//(uint8_t*)malloc(IMG_HEIGHT*IMG_WIDTH*4);//18.75K para imagem Y-only 160x120
+  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)tmp, 2*IMG_WIDTH*2*IMG_HEIGHT/4);//size=320*240/4 (grayscale)
 
   /* USER CODE END 2 */
 
@@ -228,11 +226,12 @@ int main(void)
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(status!=HAL_OK)));//red green ON if something is NOT OK
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
 
+	  //habilita compressão JPEG
 	  if((hdcmi.DMA_Handle->State == HAL_DMA_STATE_READY) && (jpeg_encode_done==1)){//DMA ocioso e compressão terminada
 		  jpeg_encode_done = 0;
 		  switch_dma_jpeg_buffers();
 		  jpeg_encode_enabled = 1;
-		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)tmp, 2*IMG_WIDTH*2*IMG_HEIGHT/4);//size=320*240/4 (grayscale)
 	  }
 
 	  if (jpeg_encode_enabled == 1)
@@ -253,7 +252,7 @@ int main(void)
 */
 
 		  jpeg_encode_done = 1;//encoding ended
-		  HAL_Delay(1);//pôr menos do que isso sobrecarrega o OTG FS (max 1,5MB/s)
+		  //HAL_Delay(1);//pôr menos do que isso sobrecarrega o OTG FS (max 1,5MB/s)
 		  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 		  //hdcmi.DMA_Handle->Instance->CR |= DMA_SxCR_EN;//Enables DMA again (disabled in DMA2_IRQ)
 		  //HAL_DCMI_Resume(&hdcmi);
@@ -435,6 +434,8 @@ void switch_dma_jpeg_buffers(void){
 		raw_image = (uint8_t*)raw_image0;
 		dma_buffer = (uint8_t*)raw_image1;
 	}
+/*	raw_image 	= dma_buffer;//imagem recebida está pronta para compressão
+	dma_buffer 	= (uint8_t*)malloc(IMG_HEIGHT*IMG_WIDTH*4);//75K para imagem Y-only 320x240 */
 	return;
 }
 
