@@ -52,6 +52,7 @@
 #include "ov7725.h"
 #include "ov7725_regs.h"
 #include "stm32f7xx_hal_dcmi.h"
+#include <stdlib.h>
 
 typedef struct
 {
@@ -102,6 +103,7 @@ void OTG_FS_IRQHandler(void);
 void sensor_config();
 int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data);
 void switch_dma_jpeg_buffers(void);
+int** filter(uint8_t* raw_image,uint8_t threshold);
 void TimingDelay_Decrement(void);
 void Delay(__IO uint32_t nTime);
 void Fail_Handler(void);
@@ -211,6 +213,9 @@ int main(void)
   dma_buffer= (uint8_t*)raw_image1;
   HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
 
+  int** points;//pontos que serão passados ao k-means (argumento data)
+  uint8_t threshold=0xFF; //limiar inferior (mínimo) para o ponto passar pelo filtro
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -230,6 +235,7 @@ int main(void)
 		  switch_dma_jpeg_buffers();
 		  jpeg_encode_enabled = 1;
 		  HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
+		  //points = filter(raw_image,threshold);//espaço é alocado para points usando malloc
 	  }
 
 	  if (jpeg_encode_enabled == 1)
@@ -240,6 +246,14 @@ int main(void)
 		  //jpeg_encode_done = 0;
 
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
+
+		  /*int point_index=0;
+		  while(points[point_index]!=NULL)
+		  {
+			  free(points[point_index]);
+			  point_index++;
+		  }
+		  free(points);//usamos points, precisamos liberar a memória */
 
 /*
 		  circle_x = 160 + sin(angle)*60;
@@ -434,6 +448,65 @@ void switch_dma_jpeg_buffers(void){
 	}
 	return;
 }
+
+/* int** filter(uint8_t* image,uint8_t threshold){
+	#define INITIAL_CAPACITY 10
+	//abaixo está definido o número máximo de vezes que podemos dobrar o espaço alocado
+	#define MAX_RESIZES 4
+
+	int capacity = INITIAL_CAPACITY;//capacity: número de pontos de que podem ser armazenados
+	int** ptr=malloc(capacity*sizeof(int*));
+
+	int stored=0;//stored: número de pontos EFETIVAMENTE armazenados
+	int resizes=0;//resizes: número de vezes que precisamos aumentar a capacidade do vetor
+	int saturated_inc=(1<<MAX_RESIZES)*INITIAL_CAPACITY;//saturated_inc: tamanho dos incrementos de tamanho de ptr após este "saturar"
+	for(int i=0;i<IMG_HEIGHT;i++){//i:linha da img menor
+		for(int j=0;j<IMG_WIDTH;j++){//j:coluna da img menor
+			if(image[IMG_WIDTH*i+j] >= threshold){
+				if(stored == capacity){//verifica se precisa de mais espaço
+					if(resizes <= MAX_RESIZES){//verifica se pode dobrar o espaço
+						int** new_ptr = realloc(ptr,2*capacity*sizeof(int*));
+
+						if(new_ptr!=NULL)
+							ptr=new_ptr;
+						else
+							return ptr;//se malloc falhar, retornamos o que conseguimos
+
+						ptr[stored]=malloc(2*sizeof(int));
+						ptr[stored][0]=i;//y, cf kmeans
+						ptr[stored][1]=j;//x, cf kmeans
+						stored++;
+						capacity *= 2;//dobra capacity
+						resizes++;
+					}else{//a partir de agora, aumenta "linearmente" o armazenamento, o incremento "satura"
+						int** new_ptr = realloc(ptr,(capacity+saturated_inc)*sizeof(int*));
+
+						if(new_ptr!=NULL)
+							ptr=new_ptr;
+						else
+							return ptr;//se malloc falhar, retornamos o que conseguimos
+
+						ptr[stored]=malloc(2*sizeof(int));
+						ptr[stored][0]=i;//y, cf kmeans
+						ptr[stored][1]=j;//x, cf kmeans
+						stored++;
+						capacity += saturated_inc;//atualiza capacity
+						resizes++;
+					}
+				}else{//se não precisa de mais espaço, apenas aloca o novo ponto
+					ptr[stored]=malloc(2*sizeof(int));
+					ptr[stored][0]=i;//y, cf kmeans
+					ptr[stored][1]=j;//x, cf kmeans
+					stored++;
+				}
+			}
+		}
+	}
+	if(stored < capacity && stored > 0){//libera espaço que não seja necessário
+		ptr = realloc(ptr,stored*sizeof(int*));
+	}
+	return ptr;
+}*/
 
 void delay_ms(uint32_t ms)
 {
