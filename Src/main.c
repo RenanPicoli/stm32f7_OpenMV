@@ -53,6 +53,7 @@
 #include "ov7725_regs.h"
 #include "stm32f7xx_hal_dcmi.h"
 #include <stdlib.h>
+#include "kmeans.h"
 
 typedef struct
 {
@@ -217,6 +218,13 @@ int main(void)
   uint8_t threshold=0xFF; //limiar inferior (mínimo) para o ponto passar pelo filtro
   int points_stored = 0;//número de pontos claros detectados
 
+  int k=1;//k: k do K-Means
+  float ** centroids=(float **)calloc(k,sizeof(float *));
+
+  for(int i=0;i<k;i++){
+	  centroids[i]=(float*)calloc(2,sizeof(float));
+  }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -247,8 +255,17 @@ int main(void)
 		  //jpeg_encode_done = 0;
 
 		  //TESTE: pinta de preto os pontos claros detectados
-		  for(int i=0;i<points_stored;i++){
+		  /*for(int i=0;i<points_stored;i++){
 			  raw_image[IMG_WIDTH*points[i][0]+points[i][1]]=0x00;
+		  }*/
+
+		  if(points_stored){
+			  if(k_means(points,points_stored,2,k,0.001,centroids)==K_MEANS_OK){
+				  //draw
+				  for(int i=0;i<k;i++){
+					  raw_image[IMG_WIDTH*(int)(centroids[i][0])+(int)(centroids[i][1])]=0x00;
+				  }
+			  }
 		  }
 
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.

@@ -59,8 +59,7 @@
 //macro para substituir fabs de math.h
 #define fabs(x) x>0?x:(-x)
 
-#define K_MEANS_OK 		0
-#define K_MEANS_ERROR 	1
+#include "kmeans.h"
 
 #include <stdio.h>//incluí printf para debug
 
