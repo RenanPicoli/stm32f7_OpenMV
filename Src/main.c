@@ -54,6 +54,7 @@
 #include "stm32f7xx_hal_dcmi.h"
 #include <stdlib.h>
 #include "kmeans.h"
+#include "artp.h"
 
 typedef struct
 {
@@ -261,9 +262,14 @@ int main(void)
 
 		  if(points_stored){
 			  if(k_means(points,points_stored,2,k,0.001,centroids)==K_MEANS_OK){
-				  //draw
-				  for(int i=0;i<k;i++){
+				  //draw black point at centroid position
+				  /*for(int i=0;i<k;i++){
 					  raw_image[IMG_WIDTH*(int)(centroids[i][0])+(int)(centroids[i][1])]=0x00;
+				  }*/
+				  //draw QR code, its center is the cluster's centroid
+				  for(int i=0;i<k;i++){
+					  draw_QRcode(raw_image,(int)centroids[i][1],(int)centroids[i][0],IMG_WIDTH,IMG_HEIGHT);
+					  //draw_QRcode(raw_image,IMG_WIDTH/2,IMG_HEIGHT/2,IMG_WIDTH,IMG_HEIGHT);
 				  }
 			  }
 		  }
