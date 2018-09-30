@@ -30,5 +30,6 @@ void draw_QRcode(uint8_t* image,int x_center,int y_center,int img_w,int img_h){
 	//no melhor caso, é só desenhar :)
 	for(int i=0;i<EDGE;i++)
 		for(int j=0;j<EDGE;j++)
-			image[img_w*(y_center-(EDGE/2)+i)+(x_center-(EDGE/2)+j)]=qrcode[i][j];
+			if(y_center-(EDGE/2)+i >=0 && y_center-(EDGE/2)+i < img_h && x_center-(EDGE/2)+j >=0 && x_center-(EDGE/2)+j < img_w)
+				image[img_w*(y_center-(EDGE/2)+i)+(x_center-(EDGE/2)+j)]=qrcode[i][j];
 }
