@@ -101,7 +101,6 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 void OTG_FS_IRQHandler(void);
-//void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color);
 void sensor_config();
 int camera_writeb(uint8_t slv_addr, uint8_t reg_addr, uint8_t reg_data);
 void switch_dma_jpeg_buffers(void);
@@ -284,14 +283,6 @@ int main(void)
 		  }
 		  free(points);//usamos points, precisamos liberar a memória
 
-/*
-		  circle_x = 160 + sin(angle)*60;
-		  circle_y = 120 + cos(angle)*60;
-		  angle+= 0.05;
-		  color+= 10;
-		  draw_circle((int)circle_x, (int)circle_y, 15, color);
-*/
-
 		  jpeg_encode_done = 1;//encoding ended
 		  HAL_Delay(1);//pôr menos do que isso sobrecarrega o OTG FS (max 1,5MB/s)
 		  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dma_buffer, IMG_WIDTH*IMG_HEIGHT/4);//size=320*240/4
@@ -396,41 +387,6 @@ void OTG_FS_IRQHandler(void)
 
   /* USER CODE END OTG_FS_IRQn 1 */
 }
-
-/* void draw_circle(int Hcenter, int Vcenter, int radius,uint8_t color)
-{
-  int x = radius;
-  int y = 0;
-  int xChange = 1 - (radius << 1);
-  int yChange = 0;
-  int radiusError = 0;
-  int i;
-  //int p = 3 - 2 * radius;
-
-  while (x >= y)
-  {
-    for (i = Hcenter - x; i <= Hcenter + x; i++)
-    {
-      raw_image[Vcenter + y][i] = color;
-      raw_image[Vcenter - y][i] = color;
-    }
-    for (i = Hcenter - y; i <= Hcenter + y; i++)
-    {
-      raw_image[Vcenter + x][i] = color;
-      raw_image[Vcenter - x][i] = color;
-    }
-
-    y++;
-    radiusError += yChange;
-    yChange += 2;
-    if (((radiusError << 1) + xChange) > 0)
-    {
-      x--;
-      radiusError += xChange;
-      xChange += 2;
-    }
-  }
-}*/
 
 void sensor_config()
 {
