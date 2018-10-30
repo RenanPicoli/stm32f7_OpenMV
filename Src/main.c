@@ -83,6 +83,8 @@ uint8_t* raw_image;//intended for jpeg compression
 uint8_t* dma_buffer;//intended for DMA xfers
 
 HAL_StatusTypeDef status;
+#define NSAMPLES 20
+int32_t samples[NSAMPLES];
 
 uint16_t last_jpeg_frame_size = 0;
 volatile uint8_t jpeg_encode_done = 0;//1 - encode stopped flag
@@ -209,6 +211,16 @@ int main(void)
   MX_DMA_Init();
   MX_DCMI_Init();
 
+  __HAL_RCC_TIM6_CLK_ENABLE();
+  TIM_HandleTypeDef htim;
+  htim.Instance	= TIM6;
+  htim.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim.Init.Prescaler = 54;//TIM6CLK=2xAPB1CLK=54MHz, cada tick é 1us
+  //htim.Init.ClockDivision = ;
+  htim.Init.Period = 0xFFFF;//conta até 65535 e dá o reload
+  htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  HAL_TIM_Base_Init(&htim);//configura o timer
+
   jpeg_encode_done = 1;
   raw_image = (uint8_t*)raw_image0;
   dma_buffer= (uint8_t*)raw_image1;
@@ -234,7 +246,7 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	  i++;
+	  //i++;
 	  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0,(GPIO_PinState)(!(play_status==2)));//red led is on when running
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)(!(status!=HAL_OK)));//red green ON if something is NOT OK
 	  //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,(GPIO_PinState)(!(DCMI->SR & DCMI_SR_FNE)));//blue led is on when running
@@ -273,7 +285,16 @@ int main(void)
 			  }
 		  }
 
+		  //começa a contar o tempo para codificação de um frame
+		  HAL_TIM_Base_Start(&htim);
+		  int32_t microsegundos = htim.Instance->CNT;
+
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
+		  microsegundos = htim.Instance->CNT - microsegundos;//pausa a contagem de tempo
+		  HAL_TIM_Base_Stop(&htim);
+
+		  samples[i%NSAMPLES] = microsegundos;//grava a nova amostra de tempo
+		  i++;
 
 		  int point_index=0;
 		  while(point_index < points_stored)
