@@ -215,7 +215,7 @@ int main(void)
   TIM_HandleTypeDef htim;
   htim.Instance	= TIM6;
   htim.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim.Init.Prescaler = 54;//TIM6CLK=2xAPB1CLK=54MHz, cada tick é 1us
+  htim.Init.Prescaler = 54000;//TIM6CLK=2xAPB1CLK=54MHz, cada tick é 1ms
   //htim.Init.ClockDivision = ;
   htim.Init.Period = 0xFFFF;//conta até 65535 e dá o reload
   htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -287,13 +287,13 @@ int main(void)
 
 		  //começa a contar o tempo para codificação de um frame
 		  HAL_TIM_Base_Start(&htim);
-		  int32_t microsegundos = htim.Instance->CNT;
+		  int32_t milisegundos = htim.Instance->CNT;
 
 		  last_jpeg_frame_size = jprocess();//Data source (image) for jpeg encoder can be switched in "jprocess" function.
-		  microsegundos = htim.Instance->CNT - microsegundos;//pausa a contagem de tempo
+		  milisegundos = htim.Instance->CNT - milisegundos;//pausa a contagem de tempo
 		  HAL_TIM_Base_Stop(&htim);
 
-		  samples[i%NSAMPLES] = microsegundos;//grava a nova amostra de tempo
+		  samples[i%NSAMPLES] = milisegundos;//grava a nova amostra de tempo
 		  i++;
 
 		  int point_index=0;
